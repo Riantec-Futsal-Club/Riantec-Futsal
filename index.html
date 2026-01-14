@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riantec Futsal | Entente Rive Gauche (ERG)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFD700;
+            --secondary: #001A3D;
+            --bg: #000E21;
+            --text: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        .font-huge {
+            font-family: 'Syncopate', sans-serif;
+            text-transform: uppercase;
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
+
+        #cursor {
+            width: 15px;
+            height: 15px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-follower {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: transform 0.15s ease-out;
+        }
+
+        .futsal-pitch-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.1;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pitch-lines {
+            width: 90vw;
+            height: 150vh;
+            border: 2px solid var(--primary);
+            position: relative;
+            transform: perspective(1000px) rotateX(20deg);
+        }
+
+        .pitch-center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20vw;
+            height: 20vw;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+        }
+
+        .pitch-center-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .outline-text {
+            -webkit-text-stroke: 1px rgba(255, 215, 0, 0.3);
+            color: transparent;
+        }
+
+        .section-padding { padding: 8vw 5vw; }
+
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC42NSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNuKSIgb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==');
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .behind-text {
+            position: absolute;
+            font-size: 20vw;
+            z-index: -1;
+            white-space: nowrap;
+            opacity: 0.05;
+            font-weight: 900;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .nav-link {
+            position: relative;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 900;
+            transition: color 0.3s;
+            color: white;
+        }
+
+        .header-light .nav-link { color: #001A3D; }
+        .header-light .nav-link:hover { color: #FFD700; }
+        .header-light #menu-toggle div { background-color: #001A3D; }
+        .header-light #menu-toggle div:last-child { background-color: #FFD700; }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after { width: 100%; }
+
+        .card-glass {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+        }
+
+        .card-glass:hover {
+            border-color: var(--primary);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        #mobile-menu {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 14, 33, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-card {
+            background: var(--primary);
+            color: var(--secondary);
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            border-radius: 4px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .scorer-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #001A3D;
+            opacity: 0.7;
+        }
+
+        .logo-bubble {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .partner-logo {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: grayscale(1);
+            transition: all 0.5s ease;
+        }
+
+        .card-glass:hover .logo-bubble {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .card-glass:hover .partner-logo {
+            filter: grayscale(0);
+        }
+
+        .logo-club {
+            transition: transform 0.4s ease;
+        }
+
+        .logo-club:hover {
+            transform: scale(1.1);
+        }
+
+        .table-row {
+            border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+            transition: background 0.3s;
+        }
+        .table-row:hover {
+            background: rgba(255, 215, 0, 0.03);
+        }
+        .table-row.highlight {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise"></div>
+    <div id="cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <div class="futsal-pitch-bg">
+        <div class="pitch-lines parallax-pitch">
+            <div class="pitch-center-line"></div>
+            <div class="pitch-center-circle"></div>
+        </div>
+    </div>
+
+    <!-- MODAL CONVOCATIONS -->
+    <div id="modal-overlay" onclick="closeModal()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button onclick="closeModal()" class="absolute top-4 right-4 font-black uppercase text-[10px] tracking-widest border-b-2 border-black">Fermer</button>
+            <h3 id="modal-title" class="font-huge text-2xl md:text-3xl mb-8">CONVOCATIONS</h3>
+            <div id="modal-content" class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm font-black uppercase tracking-tight">
+                <!-- Injecté par JS -->
+            </div>
+            <div class="mt-10 pt-6 border-t border-black/10 flex justify-between items-center opacity-60">
+                <span class="text-[10px] font-bold uppercase tracking-widest">Riantec Futsal Club</span>
+                <span class="text-[10px] font-bold uppercase tracking-widest italic">Entente Rive Gauche</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER & NAVIGATION -->
+    <header id="main-header" class="fixed top-0 left-0 w-full p-6 md:p-8 flex justify-between items-center z-[1000] transition-colors duration-500">
+        <div class="overflow-hidden flex items-center logo-container">
+            <a href="#accueil" class="flex items-center">
+                <img src="logo erg.png" alt="Logo Entente Rive Gauche" class="w-12 h-12 md:w-16 md:h-16 object-contain logo-club">
+            </a>
+        </div>
+        
+        <nav class="hidden lg:flex gap-8">
+            <a href="#accueil" class="nav-link">Accueil</a>
+            <a href="#scores" class="nav-link">Scores</a>
+            <a href="#classement" class="nav-link">Classement</a>
+            <a href="#calendrier" class="nav-link">Calendrier</a>
+            <a href="#partenaires" class="nav-link">Partenaires</a>
+            <a href="#contact" class="nav-link text-[#FFD700]">Contact</a>
+        </nav>
+
+        <button id="menu-toggle" class="lg:hidden flex flex-col gap-1.5 z-[1001]">
+            <div class="w-8 h-0.5 bg-white transition-colors duration-300"></div>
+            <div class="w-8 h-0.5 bg-white transition-colors duration-300"></div>
+            <div class="w-5 h-0.5 bg-[#FFD700] self-end transition-colors duration-300"></div>
+        </button>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 bg-[#000E21] z-[999] translate-x-full flex flex-col items-center justify-center gap-8 text-center">
+        <a href="#accueil" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Accueil</a>
+        <a href="#scores" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Scores</a>
+        <a href="#classement" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Classement</a>
+        <a href="#calendrier" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Calendrier</a>
+        <a href="#partenaires" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Partenaires</a>
+        <a href="#contact" class="font-huge text-4xl text-[#FFD700] mobile-nav-link">Contact</a>
+    </div>
+
+    <!-- SECTION 1: ACCUEIL -->
+    <section id="accueil" class="h-screen flex items-center justify-center relative">
+        <div class="text-center z-10">
+            <div class="overflow-hidden mb-4">
+                <span class="block text-xs uppercase tracking-[0.8em] text-[#FFD700] hero-reveal italic">Entente Rive Gauche</span>
+            </div>
+            <h1 class="font-huge text-[12vw] md:text-[13vw] leading-[0.8] hero-reveal">
+                Riantec<br><span class="outline-text text-[#FFD700]/20">FUTSAL</span>
+            </h1>
+            <div class="mt-8 overflow-hidden">
+                <span class="block text-sm font-bold uppercase tracking-widest opacity-60 hero-reveal">Riantec Futsal Club</span>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-10 flex gap-4 text-[10px] uppercase tracking-widest font-bold">
+            <span class="opacity-40">Fondé en 2019</span>
+            <span class="text-[#FFD700]">Pays de Lorient, Bretagne</span>
+        </div>
+    </section>
+
+    <!-- SECTION 2: SCORES -->
+    <section id="scores" class="section-padding bg-white text-[#001A3D] relative overflow-hidden dark-trigger">
+        <div class="behind-text font-huge outline-text opacity-10" style="color:#001A3D; -webkit-text-stroke: 1px #001A3D;">RÉSULTATS</div>
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-4">
+            <h2 class="font-huge text-5xl md:text-7xl reveal-up">LES <span class="text-blue-900">SCORES</span></h2>
+            <div class="flex gap-2 reveal-up">
+                <span class="px-3 py-1 bg-blue-900 text-white text-[10px] font-black uppercase tracking-tighter">District 1</span>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div class="reveal-up">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-0.5 bg-blue-900"></div>
+                    <h3 class="font-huge text-2xl">ÉQUIPE A</h3>
+                </div>
+                <div class="p-6 border-l-4 border-green-500 bg-gray-50 shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-bold uppercase tracking-widest opacity-60">J6 • Championnat</span>
+                        <span class="bg-[#001A3D] text-[#FFD700] px-3 py-1 rounded-full text-[9px] font-black uppercase">Victoire</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="font-huge text-xl">ERG (A)</span>
+                        <div class="flex items-center gap-4">
+                            <span class="font-huge text-4xl">5</span>
+                            <span class="text-xl opacity-30">-</span>
+                            <span class="font-huge text-4xl">2</span>
+                        </div>
+                        <span class="font-huge text-xl opacity-40">GPR</span>
+                    </div>
+                    <div class="pt-4 border-t border-black/5">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <span class="scorer-tag">⚽ Thomas G. (x2)</span>
+                            <span class="scorer-tag">⚽ Maxime L.</span>
+                            <span class="scorer-tag">⚽ Kevin D.</span>
+                            <span class="scorer-tag">⚽ Axel M.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal-up">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-0.5 bg-blue-900/30"></div>
+                    <h3 class="font-huge text-2xl">ÉQUIPE B</h3>
+                </div>
+                <div class="p-6 border-l-4 border-blue-500 bg-gray-50 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-bold uppercase tracking-widest opacity-60">J6 • Championnat</span>
+                        <span class="bg-[#001A3D] text-[#FFD700] px-3 py-1 rounded-full text-[9px] font-black uppercase">Victoire</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="font-huge text-xl">ERG (B)</span>
+                        <div class="flex items-center gap-4">
+                            <span class="font-huge text-4xl">4</span>
+                            <span class="text-xl opacity-30">-</span>
+                            <span class="font-huge text-4xl">1</span>
+                        </div>
+                        <span class="font-huge text-xl opacity-40">LLAL</span>
+                    </div>
+                    <div class="pt-4 border-t border-black/5">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1">
+                            <span class="scorer-tag">⚽ Jérémy M. (x2)</span>
+                            <span class="scorer-tag">⚽ Lucas B.</span>
+                            <span class="scorer-tag">⚽ Paul S.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION CLASSEMENT UNIQUE (11 ÉQUIPES) -->
+    <section id="classement" class="section-padding bg-[#000E21] relative overflow-hidden">
+        <div class="behind-text font-huge outline-text opacity-5">STANDINGS</div>
+        <h2 class="font-huge text-5xl md:text-7xl mb-16 reveal-up">LE <span class="text-[#FFD700]">CLASSEMENT</span></h2>
+        
+        <div class="max-w-4xl mx-auto reveal-up">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-huge text-xl flex items-center gap-4">
+                    <span class="text-[#FFD700]">DISTRICT 1</span> MORBIHAN
+                </h3>
+                <span class="text-[10px] font-black bg-white/10 px-3 py-1 rounded">11 ÉQUIPES</span>
+            </div>
+            
+            <div class="overflow-x-auto card-glass p-1">
+                <table class="w-full text-left text-xs font-bold uppercase tracking-wider">
+                    <thead class="bg-white/5 text-[#FFD700]">
+                        <tr>
+                            <th class="p-4 w-12">#</th>
+                            <th class="p-4">Club</th>
+                            <th class="p-4 text-center">PTS</th>
+                            <th class="p-4 text-center">J</th>
+                            <th class="p-4 text-center">DIFF</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-row">
+                            <td class="p-4">1</td>
+                            <td class="p-4 flex items-center gap-2">
+                                LE SOURN SP <span class="text-[8px] bg-[#FFD700] text-black px-1 rounded">LEADER</span>
+                            </td>
+                            <td class="p-4 text-center">21</td>
+                            <td class="p-4 text-center">7</td>
+                            <td class="p-4 text-center">+37</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="p-4">2</td>
+                            <td class="p-4">AURAY FOOTBALL CLUB</td>
+                            <td class="p-4 text-center">18</td>
+                            <td class="p-4 text-center">7</td>
+                            <td class="p-4 text-center">+29</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="p-4">3</td>
+                            <td class="p-4">LOCOAL MENDON</td>
+                            <td class="p-4 text-center">18</td>
+                            <td class="p-4 text-center">8</td>
+                            <td class="p-4 text-center">+6</td>
+                        </tr>
+                        <tr class="table-row highlight">
+                            <td class="p-4">4</td>
+                            <td class="p-4">RIANTEC E.R.G (A)</td>
+                            <td class="p-4 text-center">15</td>
+                            <td class="p-4 text-center">8</td>
+                            <td class="p-4 text-center">+23</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="p-4">5</td>
+                            <td class="p-4">ERDEVEN ETEL FOOT</td>
+                            <td class="p-4 text-center">14</td>
+                            <td class="p-4 text-center">8</td>
+                            <td class="p-4 text-center">+18</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="p-4">6</td>
+                            <td class="p-4">CARNAC FUTSAL CLUB</td>
+                            <td class="p-4 text-center">12</td>
+                            <td class="p-4 text-center">8</td>
+                            <td class="p-4 text-center">-1</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="p-4">7</td>
+                            <td class="p-4">PORT LOUIS ES SUD</td>
+                            <td class="p-4 text-center">10</td>
+                            <td class="p-4 text-center">8</td>
+                            <td class="p-4 text-center">+4</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="p-4">8</td>
+                            <td class="p-4">PONTIVY GS 2</td>
+                            <td class="p-4 text-center">6</td>
+                            <td class="p-4 text-center">8</td>
+                            <td class="p-4 text-center">-14</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="p-4">9</td>
+                            <td class="p-4">STE ANNE D AURAY ASC</td>
+                            <td class="p-4 text-center">5</td>
+                            <td class="p-4 text-center">9</td>
+                            <td class="p-4 text-center">-34</td>
+                        </tr>
+                        <tr class="table-row highlight">
+                            <td class="p-4">10</td>
+                            <td class="p-4">RIANTEC E.R.G (B)</td>
+                            <td class="p-4 text-center">3</td>
+                            <td class="p-4 text-center">8</td>
+                            <td class="p-4 text-center">-38</td>
+                        </tr>
+                        <tr class="table-row">
+                            <td class="p-4">11</td>
+                            <td class="p-4">FC BELUGAS RIA</td>
+                            <td class="p-4 text-center">0</td>
+                            <td class="p-4 text-center">7</td>
+                            <td class="p-4 text-center">-29</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex flex-col md:flex-row justify-between items-start gap-4">
+                <div class="flex gap-4 text-[9px] font-bold uppercase tracking-widest opacity-40">
+                    <div class="flex items-center gap-1"><div class="w-2 h-2 bg-[#FFD700]"></div> Nos équipes</div>
+                    <div>Mise à jour : Janvier 2026</div>
+                </div>
+                <div class="text-[9px] font-bold uppercase tracking-widest opacity-20 italic">Poule Unique - District 1</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: CALENDRIER & CONVOCATIONS -->
+    <section id="calendrier" class="section-padding relative">
+        <h2 class="font-huge text-5xl md:text-7xl mb-16 text-right reveal-up">CALENDRIER</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl ml-auto">
+            <div class="card-glass p-8 flex flex-col justify-between reveal-up border-l-2 border-[#FFD700]">
+                <div>
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-2 py-1 bg-[#FFD700] text-[#001A3D] text-[10px] font-black uppercase tracking-widest">ÉQUIPE A</span>
+                        <div class="text-[#FFD700] font-huge text-xl">24 JAN.</div>
+                    </div>
+                    <h3 class="font-huge text-2xl mb-2">VS HENNEBONT</h3>
+                    <div class="space-y-1 text-xs uppercase tracking-widest font-bold opacity-60 mb-8">
+                        <p>📍 Domicile • Salle Omnisports</p>
+                        <p>⏰ Coup d'envoi : 20h30</p>
+                        <p>🏆 District 1 - J7</p>
+                    </div>
+                </div>
+                <button onclick="openConvocs('A')" class="w-full py-4 bg-transparent border border-[#FFD700] text-[#FFD700] text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#FFD700] hover:text-[#001A3D] transition-all">
+                    VOIR CONVOCATIONS
+                </button>
+            </div>
+
+            <div class="card-glass p-8 flex flex-col justify-between reveal-up border-l-2 border-white/20">
+                <div>
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-2 py-1 bg-white/10 text-white text-[10px] font-black uppercase tracking-widest">ÉQUIPE B</span>
+                        <div class="text-[#FFD700] font-huge text-xl">25 JAN.</div>
+                    </div>
+                    <h3 class="font-huge text-2xl mb-2">VS CAUDAN</h3>
+                    <div class="space-y-1 text-xs uppercase tracking-widest font-bold opacity-60 mb-8">
+                        <p>📍 Extérieur • Complexe Sportif</p>
+                        <p>⏰ Coup d'envoi : 18h00</p>
+                        <p>🏆 District 1 - J7</p>
+                    </div>
+                </div>
+                <button onclick="openConvocs('B')" class="w-full py-4 bg-transparent border border-white/30 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-[#001A3D] transition-all">
+                    VOIR CONVOCATIONS
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: PARTENAIRES -->
+    <section id="partenaires" class="section-padding bg-[#000E21] relative z-10">
+        <h2 class="font-huge text-4xl md:text-6xl mb-16 text-center reveal-up">NOS PARTENAIRES</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
+            
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="pizza minahouet.jpg" alt="Pizza Minahouet" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Pizza Minahouet</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Pizzeria Locale</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="scouiller.png" alt="Scouiller" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Scouiller</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Couverture / Zinguerie</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="brioche.png" alt="Brioche du Riant" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Brioche du Riant</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Boulangerie</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="rigado.png" alt="Rigad'o Bar" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Rigad'o Bar</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Bar</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="optic 2000.png" alt="Optic 2000" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Optic 2000</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Opticien</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="lamour.jpeg" alt="Bar Chez Lamour" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Bar Chez Lamour</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Bar</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="culs sales.png" alt="Les Culs Salés" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Les Culs Salés</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Restaurant</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="breizh pet.jpeg" alt="Breizh Pet 56" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Breizh Pet 56</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Garde d'animaux</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="flotylu.png" alt="Flotylu" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Flotylu</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Foodtruck</p>
+            </div>
+
+            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
+                <div class="logo-bubble">
+                    <img src="delice.jpg" alt="Aux Délices de la Pointe" class="partner-logo">
+                </div>
+                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Aux Délices de la Pointe</h4>
+                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Boulangerie</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="contact" class="section-padding text-center relative overflow-hidden bg-gradient-to-t from-black to-transparent">
+        <div class="py-20">
+            <h2 class="font-huge text-[10vw] leading-none mb-10 reveal-up">PRENDRE<br><span class="text-[#FFD700]">CONTACT</span></h2>
+            <div class="flex flex-wrap justify-center gap-8 md:gap-12 text-xs font-black tracking-widest uppercase mb-20">
+                <a href="mailto:riantecfutsal@gmail.com" class="hover:text-[#FFD700] transition-colors border-b border-transparent hover:border-[#FFD700] pb-1">Email</a>
+                <a href="https://www.instagram.com/riantec_futsal/" target="_blank" rel="noopener noreferrer" class="hover:text-[#FFD700] transition-colors border-b border-transparent hover:border-[#FFD700] pb-1">Instagram</a>
+                <a href="https://www.facebook.com/riantecfutsal/" target="_blank" rel="noopener noreferrer" class="hover:text-[#FFD700] transition-colors border-b border-transparent hover:border-[#FFD700] pb-1">Facebook</a>
+            </div>
+            <p class="max-w-xl mx-auto text-gray-400 text-xs italic">
+                Riantec Futsal Club - Entente Rive Gauche (ERG) <br> 
+                Gymnase de Kerdurand, 56670 Riantec.
+            </p>
+        </div>
+        <div class="mt-20 flex justify-between items-center text-[10px] opacity-40 uppercase tracking-widest font-bold">
+            <span>© 2019 Riantec Futsal</span>
+            <img src="logo erg.png" alt="ERG" class="w-8 h-8 opacity-50">
+            <span>Crédit : Dorian Meilleur</span>
+        </div>
+    </footer>
+
+    <script>
+        const dataConvocs = {
+            'A': ["Thomas G.", "Maxime L.", "Kevin D.", "Bastien R. (GK)", "Clément P.", "Axel M.", "Yann B.", "Hugo F."],
+            'B': ["Stéphane R.", "Jérémy M.", "Lucas B.", "Hugo T. (GK)", "Paul S.", "Nathan V.", "Romain K.", "David L."]
+        };
+
+        window.openConvocs = function(equipe) {
+            const modal = document.getElementById('modal-overlay');
+            const title = document.getElementById('modal-title');
+            const content = document.getElementById('modal-content');
+            
+            title.innerText = `GROUPE ${equipe}`;
+            content.innerHTML = dataConvocs[equipe].map(nom => `<div>- ${nom}</div>`).join('');
+            
+            modal.style.display = 'flex';
+            gsap.fromTo(".modal-card", 
+                { scale: 0.8, opacity: 0, y: 20 },
+                { scale: 1, opacity: 1, y: 0, duration: 0.5, ease: "power4.out" }
+            );
+        };
+
+        window.closeModal = function() {
+            gsap.to(".modal-card", { 
+                scale: 0.8, opacity: 0, y: 20, duration: 0.3, ease: "power4.in",
+                onComplete: () => {
+                    document.getElementById('modal-overlay').style.display = 'none';
+                }
+            });
+        };
+
+        window.addEventListener('load', () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            const cursor = document.getElementById('cursor');
+            const follower = document.querySelector('.cursor-follower');
+            document.addEventListener('mousemove', (e) => {
+                gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0 });
+                gsap.to(follower, { x: e.clientX - 20, y: e.clientY - 20, duration: 0.3 });
+            });
+
+            const header = document.getElementById('main-header');
+            ScrollTrigger.create({
+                trigger: ".dark-trigger",
+                start: "top 80px",
+                end: "bottom 80px",
+                onEnter: () => header.classList.add('header-light'),
+                onLeave: () => header.classList.remove('header-light'),
+                onEnterBack: () => header.classList.add('header-light'),
+                onLeaveBack: () => header.classList.remove('header-light')
+            });
+
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            let isMenuOpen = false;
+
+            menuToggle.addEventListener('click', () => {
+                isMenuOpen = !isMenuOpen;
+                gsap.to(mobileMenu, { x: isMenuOpen ? '0%' : '100%', duration: 0.8, ease: "power4.inOut" });
+                const bars = menuToggle.children;
+                if(isMenuOpen) {
+                    gsap.to(bars[0], { rotate: 45, y: 8, duration: 0.3 });
+                    gsap.to(bars[1], { opacity: 0, duration: 0.3 });
+                    gsap.to(bars[2], { rotate: -45, y: -8, width: '32px', duration: 0.3 });
+                } else {
+                    gsap.to(bars[0], { rotate: 0, y: 0, duration: 0.3 });
+                    gsap.to(bars[1], { opacity: 1, duration: 0.3 });
+                    gsap.to(bars[2], { rotate: 0, y: 0, width: '20px', duration: 0.3 });
+                }
+            });
+
+            gsap.from(".hero-reveal", { y: 100, opacity: 0, duration: 1.5, stagger: 0.2, ease: "power4.out" });
+
+            gsap.utils.toArray('.reveal-up').forEach(el => {
+                gsap.from(el, {
+                    scrollTrigger: { trigger: el, start: "top 92%" },
+                    y: 40, opacity: 0, duration: 1.2, ease: "power3.out"
+                });
+            });
+
+            gsap.to(".parallax-pitch", {
+                scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.5 },
+                y: -150, rotateX: 35, opacity: 0.08
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if(href.startsWith('#')) {
+                        e.preventDefault();
+                        if(isMenuOpen) menuToggle.click();
+                        document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
