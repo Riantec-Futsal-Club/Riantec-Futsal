@@ -1,782 +1,1185 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riantec Futsal | Entente Rive Gauche (ERG)</title>
-    <link rel="icon" type="image/png" href="logo erg.png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #FFD700;
-            --secondary: #001A3D;
-            --bg: #000E21;
-            --text: #FFFFFF;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riantec Futsal | Entente Rive Gauche</title>
+<link rel="icon" type="image/png" href="logo erg.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=Cormorant+Garamond:ital,wght@1,300;1,600&display=swap" rel="stylesheet">
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            cursor: none;
-        }
+<style>
+/* ══════════════════════════════════════════════
+   BASE & VARIABLES
+══════════════════════════════════════════════ */
+:root {
+  --gold:        #F0C040;
+  --gold-2:      #FFD97A;
+  --gold-glow:   rgba(240,192,64,.35);
+  --navy:        #050B18;
+  --navy-2:      #080F20;
+  --white:       #EEF2FF;
+  --glass-bg:    rgba(255,255,255,.06);
+  --glass-bg-2:  rgba(255,255,255,.10);
+  --glass-border:rgba(255,255,255,.18);
+  --glass-shine: rgba(255,255,255,.28);
+  --text-muted:  rgba(200,210,240,.5);
+  --font-d: 'Bebas Neue', sans-serif;
+  --font-b: 'DM Sans', sans-serif;
+  --font-i: 'Cormorant Garamond', serif;
+  --r: 20px;
+}
 
-        .font-huge {
-            font-family: 'Syncopate', sans-serif;
-            text-transform: uppercase;
-            line-height: 0.8;
-            letter-spacing: -0.05em;
-        }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
-        #cursor {
-            width: 15px;
-            height: 15px;
-            background: var(--primary);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            mix-blend-mode: difference;
-        }
+body {
+  background: var(--navy);
+  color: var(--white);
+  font-family: var(--font-b);
+  overflow-x: hidden;
+  cursor: none;
+  min-height: 100vh;
+}
 
-        .cursor-follower {
-            width: 40px;
-            height: 40px;
-            border: 1px solid var(--primary);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9998;
-            transition: transform 0.15s ease-out;
-        }
+/* ══════════════════════════════════════════════
+   CURSOR
+══════════════════════════════════════════════ */
+#cur-dot {
+  width: 10px; height: 10px;
+  background: var(--gold);
+  border-radius: 50%;
+  position: fixed; z-index: 9999; pointer-events: none;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 12px var(--gold-glow);
+  transition: width .2s, height .2s;
+}
+#cur-ring {
+  width: 38px; height: 38px;
+  border: 1px solid rgba(240,192,64,.5);
+  border-radius: 50%;
+  position: fixed; z-index: 9998; pointer-events: none;
+  transform: translate(-50%,-50%);
+  backdrop-filter: invert(.05);
+}
 
-        .futsal-pitch-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            opacity: 0.1;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+/* ══════════════════════════════════════════════
+   AMBIENT BACKGROUND — animated blobs
+══════════════════════════════════════════════ */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+}
+.blob {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px);
+  opacity: .55;
+  animation: blobDrift 18s ease-in-out infinite alternate;
+}
+.blob-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(240,192,64,.4), transparent 70%); top: -15%; left: -10%; animation-duration: 20s; }
+.blob-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(60,100,220,.35), transparent 70%); top: 30%; right: -12%; animation-duration: 25s; animation-delay: -8s; }
+.blob-3 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(180,80,240,.25), transparent 70%); bottom: 10%; left: 20%; animation-duration: 22s; animation-delay: -4s; }
+.blob-4 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(240,192,64,.2), transparent 70%); bottom: 30%; right: 15%; animation-duration: 28s; animation-delay: -12s; }
 
-        .pitch-lines {
-            width: 90vw;
-            height: 150vh;
-            border: 2px solid var(--primary);
-            position: relative;
-            transform: perspective(1000px) rotateX(20deg);
-        }
+@keyframes blobDrift {
+  0%   { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(40px,-30px) scale(1.08); }
+  66%  { transform: translate(-20px,50px) scale(.94); }
+  100% { transform: translate(30px,20px) scale(1.04); }
+}
 
-        .pitch-center-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20vw;
-            height: 20vw;
-            border: 2px solid var(--primary);
-            border-radius: 50%;
-        }
+/* Pitch SVG watermark */
+.pitch-wm {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%,-50%) perspective(900px) rotateX(32deg);
+  width: 100vw; opacity: .04; pointer-events: none; z-index: 0;
+  animation: pitchFloat 30s ease-in-out infinite alternate;
+}
+@keyframes pitchFloat { 0%{transform:translate(-50%,-50%) perspective(900px) rotateX(32deg)} 100%{transform:translate(-50%,-52%) perspective(900px) rotateX(28deg)} }
 
-        .pitch-center-line {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--primary);
-        }
+/* Noise grain */
+.noise {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  opacity: .35;
+}
 
-        .outline-text {
-            -webkit-text-stroke: 1px rgba(255, 215, 0, 0.3);
-            color: transparent;
-        }
+/* ══════════════════════════════════════════════
+   GLASS MIXIN CLASSES
+══════════════════════════════════════════════ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px) saturate(1.8) brightness(1.05);
+  -webkit-backdrop-filter: blur(22px) saturate(1.8) brightness(1.05);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  position: relative;
+  overflow: hidden;
+}
+/* Top inner highlight line */
+.glass::before {
+  content: '';
+  position: absolute; top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-shine), transparent);
+  border-radius: 50%;
+}
+/* Subtle inner bottom shadow */
+.glass::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 60%;
+  background: linear-gradient(to top, rgba(0,0,0,.15), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+.glass > * { position: relative; z-index: 1; }
 
-        .section-padding { padding: 8vw 5vw; }
+.glass-gold {
+  background: rgba(240,192,64,.12);
+  backdrop-filter: blur(22px) saturate(2) brightness(1.1);
+  -webkit-backdrop-filter: blur(22px) saturate(2) brightness(1.1);
+  border: 1px solid rgba(240,192,64,.35);
+  border-radius: var(--r);
+  position: relative; overflow: hidden;
+}
+.glass-gold::before {
+  content: '';
+  position: absolute; top: 0; left: 8%; right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,220,100,.7), transparent);
+}
+.glass-gold::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(0,0,0,.12), transparent);
+  pointer-events: none; z-index: 0;
+}
+.glass-gold > * { position: relative; z-index: 1; }
 
-        .noise {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC42NSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNuKSIgb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==');
-            pointer-events: none;
-            z-index: 100;
-        }
+/* ══════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════ */
+header {
+  position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
+  width: calc(100% - 3rem); max-width: 1200px;
+  z-index: 500;
+  padding: 1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-radius: 60px;
+  background: rgba(10,15,35,.45);
+  backdrop-filter: blur(28px) saturate(2);
+  -webkit-backdrop-filter: blur(28px) saturate(2);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.15);
+  transition: background .4s;
+}
 
-        .behind-text {
-            position: absolute;
-            font-size: 20vw;
-            z-index: -1;
-            white-space: nowrap;
-            opacity: 0.05;
-            font-weight: 900;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
+.logo-link { display: flex; align-items: center; gap: .7rem; text-decoration: none; }
+.logo-link img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 0 8px var(--gold-glow)); }
+.logo-name { font-family: var(--font-d); font-size: 1rem; letter-spacing: .12em; color: var(--white); line-height: 1; }
+.logo-sub { font-size: .5rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
 
-        .nav-link {
-            position: relative;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            font-weight: 900;
-            transition: color 0.3s;
-            color: white;
-        }
+nav { display: flex; gap: 2rem; }
+.nav-a {
+  font-size: .68rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(220,230,255,.65); text-decoration: none;
+  transition: color .3s; padding: .3rem 0; position: relative;
+}
+.nav-a::after {
+  content: ''; position: absolute; bottom: -2px; left: 0;
+  width: 0; height: 1px; background: var(--gold); transition: width .35s;
+}
+.nav-a:hover { color: var(--white); }
+.nav-a:hover::after { width: 100%; }
+.nav-a.cta {
+  background: rgba(240,192,64,.15); color: var(--gold);
+  border: 1px solid rgba(240,192,64,.3); border-radius: 30px;
+  padding: .35rem .9rem;
+}
+.nav-a.cta:hover { background: rgba(240,192,64,.28); }
 
-        .header-light .nav-link { color: #001A3D; }
-        .header-light .nav-link:hover { color: #FFD700; }
-        .header-light #menu-toggle div { background-color: #001A3D; }
-        .header-light #menu-toggle div:last-child { background-color: #FFD700; }
+.ham { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+.ham span { display: block; width: 24px; height: 2px; background: var(--white); transition: all .3s; border-radius: 2px; }
+.ham span:last-child { width: 16px; background: var(--gold); }
 
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: var(--primary);
-            transition: width 0.3s;
-        }
+#mob-menu {
+  position: fixed; inset: 0; z-index: 490;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem;
+  backdrop-filter: blur(40px) saturate(2);
+  -webkit-backdrop-filter: blur(40px) saturate(2);
+  background: rgba(5,11,24,.75);
+  transform: translateY(-100%);
+  transition: transform .7s cubic-bezier(.16,1,.3,1);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+#mob-menu.open { transform: translateY(0); }
+#mob-menu a {
+  font-family: var(--font-d); font-size: clamp(2.5rem,8vw,5rem);
+  letter-spacing: .06em; color: var(--white); text-decoration: none;
+  transition: color .3s;
+}
+#mob-menu a:hover { color: var(--gold); }
 
-        .nav-link:hover::after { width: 100%; }
+/* ══════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════ */
+#hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+  padding: 8rem 4rem 5rem;
+  position: relative; z-index: 2;
+  gap: 2rem;
+}
 
-        .card-glass {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            transition: all 0.4s ease;
-        }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .75rem;
+  font-size: .65rem; font-weight: 700; letter-spacing: .25em; text-transform: uppercase;
+  color: var(--gold); opacity: 0;
+  animation: fadeUp 1s .3s ease forwards;
+}
+.hero-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
 
-        .card-glass:hover {
-            border-color: var(--primary);
-            background: rgba(255, 215, 0, 0.05);
-        }
+.hero-title {
+  font-family: var(--font-d);
+  font-size: clamp(5.5rem, 15vw, 14rem);
+  line-height: .85; letter-spacing: .02em;
+  opacity: 0; animation: fadeUp 1.1s .5s ease forwards;
+}
+.hero-title .stroke {
+  -webkit-text-stroke: 2px rgba(240,192,64,.5);
+  color: transparent;
+  display: block;
+}
 
-        #mobile-menu {
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+.hero-meta {
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp 1s .75s ease forwards;
+}
+.hero-pill {
+  font-size: .65rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+  padding: .5rem 1.2rem; border-radius: 30px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(10px);
+  color: var(--text-muted);
+}
+.hero-pill span { color: var(--white); }
 
-        #modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 14, 33, 0.95);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(10px);
-        }
+.hero-scroll {
+  display: flex; align-items: center; gap: 1rem;
+  font-size: .6rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--gold); opacity: 0;
+  animation: fadeUp 1s 1s ease forwards;
+}
+.scroll-bar { width: 40px; height: 1px; background: var(--gold); }
 
-        .modal-card {
-            background: var(--primary);
-            color: var(--secondary);
-            padding: 2.5rem;
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            border-radius: 4px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+/* Large ghost text behind */
+.hero-ghost {
+  position: absolute; right: -2vw; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-d);
+  font-size: clamp(8rem, 22vw, 22rem);
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(240,192,64,.04);
+  letter-spacing: .04em; pointer-events: none;
+  line-height: 1; user-select: none;
+  animation: ghostPulse 8s ease-in-out infinite alternate;
+}
+@keyframes ghostPulse { 0%{opacity:.6} 100%{opacity:1} }
 
-        .scorer-tag {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #001A3D;
-            opacity: 0.7;
-        }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-        .logo-bubble {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px;
-            margin-bottom: 1rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+/* ══════════════════════════════════════════════
+   SECTION COMMON
+══════════════════════════════════════════════ */
+.section {
+  position: relative; z-index: 2;
+  padding: 6rem 4rem;
+}
 
-        .partner-logo {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            filter: grayscale(1);
-            transition: all 0.5s ease;
-        }
+.sec-pill {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .58rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 1rem;
+  padding: .3rem .7rem;
+  border: 1px solid rgba(240,192,64,.25);
+  border-radius: 20px;
+  background: rgba(240,192,64,.06);
+}
+.sec-title {
+  font-family: var(--font-d);
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: .9; letter-spacing: .02em;
+  margin-bottom: 3rem;
+}
+.sec-title .dim { color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,.2); }
+.sec-title .g   { color: var(--gold); }
 
-        .card-glass:hover .logo-bubble {
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 15px 30px rgba(255, 215, 0, 0.2);
-        }
+/* ══════════════════════════════════════════════
+   SCORES
+══════════════════════════════════════════════ */
+#scores { padding-top: 5rem; }
 
-        .card-glass:hover .partner-logo {
-            filter: grayscale(0);
-        }
+.scores-wrap {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+}
 
-        .logo-club {
-            transition: transform 0.4s ease;
-        }
+.score-glass {
+  padding: 2rem;
+  transition: transform .35s, box-shadow .35s;
+}
+.score-glass:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 24px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.2);
+}
 
-        .logo-club:hover {
-            transform: scale(1.1);
-        }
+/* ══════════════════════════════════════════════
+   WIN / LOSS CARD COLORING
+══════════════════════════════════════════════ */
+.score-glass.win-card {
+  border-color: rgba(50, 200, 100, .35);
+  background: rgba(50, 200, 100, .06);
+}
+.score-glass.win-card::before {
+  background: linear-gradient(90deg, transparent, rgba(93, 222, 138, .3), transparent);
+}
+.score-glass.win-card:hover {
+  box-shadow: 0 24px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(93,222,138,.3), 0 0 30px rgba(50,200,100,.15);
+}
 
-        .table-row {
-            border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-            transition: background 0.3s;
-        }
-        .table-row:hover {
-            background: rgba(255, 215, 0, 0.03);
-        }
-        .table-row.highlight {
-            background: rgba(255, 215, 0, 0.1);
-            border-left: 3px solid var(--primary);
-        }
-    </style>
+.score-glass.loss-card {
+  border-color: rgba(220, 50, 50, .35);
+  background: rgba(220, 50, 50, .06);
+}
+.score-glass.loss-card::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 107, .3), transparent);
+}
+.score-glass.loss-card:hover {
+  box-shadow: 0 24px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(255,107,107,.3), 0 0 30px rgba(220,50,50,.15);
+}
+
+.eq-badge {
+  display: inline-block;
+  font-size: .55rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+  padding: .28rem .7rem; border-radius: 20px; margin-bottom: 1.2rem;
+}
+.eq-badge.a { background: rgba(240,192,64,.2); color: var(--gold); border: 1px solid rgba(240,192,64,.4); }
+.eq-badge.b { background: rgba(255,255,255,.07); color: rgba(220,230,255,.7); border: 1px solid rgba(255,255,255,.12); }
+
+.score-j {
+  font-size: .58rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;
+}
+.result-badge {
+  font-size: .52rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  padding: .22rem .65rem; border-radius: 20px;
+}
+.result-badge.loss { background: rgba(220,50,50,.15); color: #ff6b6b; border: 1px solid rgba(220,50,50,.25); }
+.result-badge.win  { background: rgba(50,200,100,.12); color: #5dde8a; border: 1px solid rgba(50,200,100,.25); }
+
+.score-body {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.team { flex: 1; font-family: var(--font-d); font-size: clamp(.9rem,2vw,1.2rem); letter-spacing: .04em; line-height: 1.2; }
+.team.away { text-align: right; color: var(--text-muted); }
+
+.digits {
+  display: flex; align-items: center; gap: .6rem;
+  font-family: var(--font-d); font-size: clamp(2.2rem,4vw,3rem);
+  letter-spacing: .02em; flex-shrink: 0;
+}
+.dig-sep { color: rgba(255,255,255,.2); font-size: 1.2rem; }
+
+.scorers-row {
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding-top: 1rem;
+  display: flex; flex-wrap: wrap; gap: .5rem;
+}
+.sc-chip {
+  font-size: .62rem; font-weight: 700; letter-spacing: .05em;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 30px; padding: .25rem .75rem; color: rgba(220,230,255,.8);
+}
+
+/* Boutons externes compacts (scores / calendrier) */
+.ext-btn-row {
+  display: flex; gap: .6rem; flex-wrap: wrap;
+  margin-top: 1.2rem;
+}
+.ext-btn {
+  display: inline-flex; align-items: center;
+  padding: .45rem 1rem;
+  border-radius: 30px;
+  font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  text-decoration: none;
+  color: var(--gold);
+  border: 1px solid rgba(240,192,64,.3);
+  background: rgba(240,192,64,.07);
+  transition: background .25s, border-color .25s, transform .2s;
+  white-space: nowrap;
+}
+.ext-btn:hover {
+  background: rgba(240,192,64,.18);
+  border-color: rgba(240,192,64,.6);
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════
+   CLASSEMENT
+══════════════════════════════════════════════ */
+
+.table-glass {
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.tbl-head {
+  display: grid; grid-template-columns: 44px 1fr 60px 44px 60px;
+  padding: .8rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(240,192,64,.08);
+}
+.th {
+  font-size: .55rem; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--gold);
+}
+.th.c { text-align: center; }
+
+.trow {
+  display: grid; grid-template-columns: 44px 1fr 60px 44px 60px;
+  padding: .85rem 1.5rem; align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  transition: background .2s;
+}
+.trow:hover { background: rgba(255,255,255,.04); }
+.trow:last-child { border-bottom: none; }
+.trow.erg {
+  background: rgba(240,192,64,.07);
+  border-left: 2px solid var(--gold);
+}
+
+.t-rank { font-family: var(--font-d); font-size: 1.1rem; color: var(--text-muted); }
+.t-rank.gold { color: var(--gold); }
+.t-club { font-size: .75rem; font-weight: 700; display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.tag-ldr { font-size: .44rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; background: rgba(240,192,64,.2); color: var(--gold); border: 1px solid rgba(240,192,64,.35); border-radius: 10px; padding: .15rem .45rem; }
+.tag-erg { font-size: .44rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; background: var(--gold); color: var(--navy); border-radius: 10px; padding: .15rem .45rem; }
+.t-pts { font-family: var(--font-d); font-size: 1.25rem; text-align: center; }
+.t-pts.g { color: var(--gold); }
+.t-j { font-size: .72rem; font-weight: 700; text-align: center; color: var(--text-muted); }
+.t-diff { font-size: .72rem; font-weight: 700; text-align: center; }
+.t-diff.pos { color: #5dde8a; }
+.t-diff.neg { color: #ff6b6b; }
+.t-diff.neu { color: var(--text-muted); }
+
+.tbl-foot { margin-top: 1rem; display: flex; justify-content: space-between; }
+.tbl-leg { font-size: .58rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); display: flex; align-items: center; gap: .4rem; }
+.leg-sq { width: 8px; height: 8px; background: var(--gold); border-radius: 2px; }
+.tbl-date { font-size: .55rem; color: var(--text-muted); font-style: italic; }
+
+/* ══════════════════════════════════════════════
+   CALENDRIER
+══════════════════════════════════════════════ */
+
+.cal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+.cal-card {
+  padding: 2.5rem;
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275), box-shadow .4s;
+}
+.cal-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 30px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.2), 0 0 40px var(--gold-glow);
+}
+
+.cal-eq { margin-bottom: 1.5rem; }
+.cal-date-big {
+  font-family: var(--font-d); font-size: clamp(3.5rem,7vw,5.5rem);
+  color: var(--gold); line-height: 1;
+  text-shadow: 0 0 40px var(--gold-glow);
+}
+.cal-month {
+  font-size: .6rem; font-weight: 700; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.5rem;
+}
+.cal-vs {
+  font-family: var(--font-d); font-size: clamp(1.4rem,2.8vw,2rem);
+  letter-spacing: .04em; line-height: 1; margin-bottom: 1.5rem;
+}
+.cal-vs .vs { color: var(--gold); font-size: .65em; }
+
+.cal-infos { margin-bottom: 2rem; display: flex; flex-direction: column; gap: .4rem; }
+.cal-info { font-size: .67rem; font-weight: 400; color: var(--text-muted); letter-spacing: .04em; }
+.cal-info b { color: var(--white); font-weight: 700; }
+
+.convoc-btn {
+  width: 100%; padding: .95rem 1.5rem; border: none; border-radius: 12px;
+  font-family: var(--font-b); font-size: .65rem; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; cursor: pointer; transition: all .3s;
+  position: relative; overflow: hidden;
+}
+.convoc-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.12), transparent);
+  pointer-events: none;
+}
+.convoc-btn.a {
+  background: rgba(240,192,64,.85); color: var(--navy);
+  box-shadow: 0 4px 20px rgba(240,192,64,.3);
+}
+.convoc-btn.a:hover { background: rgba(240,192,64,1); box-shadow: 0 8px 30px rgba(240,192,64,.5); transform: translateY(-1px); }
+.convoc-btn.b {
+  background: rgba(255,255,255,.07); color: var(--white);
+  border: 1px solid rgba(255,255,255,.15);
+  backdrop-filter: blur(10px);
+}
+.convoc-btn.b:hover { background: rgba(255,255,255,.13); }
+
+/* ══════════════════════════════════════════════
+   PARTENAIRES
+══════════════════════════════════════════════ */
+
+.partners-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 1rem; margin-top: 1rem;
+}
+.partner-cell {
+  padding: 1.5rem 1rem;
+  display: flex; flex-direction: column; align-items: center; gap: .75rem;
+  text-align: center; min-height: 150px; justify-content: center;
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275), box-shadow .4s;
+  cursor: pointer;
+}
+.partner-cell:hover {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 20px 40px rgba(0,0,0,.5), 0 0 20px var(--gold-glow);
+}
+.p-img-ring {
+  width: 62px; height: 62px;
+  background: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 9px;
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275), box-shadow .4s;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.6);
+}
+.partner-cell:hover .p-img-ring {
+  transform: scale(1.15) translateY(-2px);
+  box-shadow: 0 8px 28px rgba(240,192,64,.35);
+}
+.p-img-ring img {
+  max-width: 100%; max-height: 100%; object-fit: contain;
+  filter: grayscale(.7) opacity(.8);
+  transition: filter .4s;
+}
+.partner-cell:hover .p-img-ring img { filter: grayscale(0) opacity(1); }
+.p-name { font-size: .58rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); line-height: 1.3; }
+.p-cat { font-size: .5rem; color: var(--text-muted); font-weight: 400; letter-spacing: .06em; }
+
+/* ══════════════════════════════════════════════
+   FOOTER / CONTACT
+══════════════════════════════════════════════ */
+#contact { padding: 6rem 4rem 3rem; position: relative; overflow: hidden; isolation: isolate; }
+
+
+
+.contact-inner { position: relative; z-index: 1; max-width: 900px; }
+.contact-desc {
+  font-family: var(--font-i); font-size: clamp(1rem,1.8vw,1.2rem);
+  font-style: italic; color: var(--text-muted); line-height: 1.8;
+  max-width: 440px; margin-bottom: 3rem;
+}
+.contact-links { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 4rem; }
+.clink {
+  font-size: .65rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+  text-decoration: none; padding: .9rem 2rem; border-radius: 12px;
+  transition: all .3s; position: relative; overflow: hidden;
+}
+.clink::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.1), transparent);
+  pointer-events: none;
+}
+.clink.email {
+  background: rgba(240,192,64,.85); color: var(--navy);
+  box-shadow: 0 4px 20px rgba(240,192,64,.3);
+}
+.clink.email:hover { background: var(--gold-2); box-shadow: 0 8px 32px rgba(240,192,64,.55); transform: translateY(-2px); }
+.clink.social {
+  background: rgba(255,255,255,.06); color: var(--white);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(12px);
+}
+.clink.social:hover { background: rgba(255,255,255,.12); transform: translateY(-2px); }
+
+.footer-bar {
+  border-top: 1px solid rgba(255,255,255,.06); padding-top: 2rem;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+}
+.f-copy, .f-addr, .f-cred { font-size: .58rem; color: var(--text-muted); letter-spacing: .08em; }
+.f-addr { text-align: center; }
+
+/* ══════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════ */
+#modal-ov {
+  display: none; position: fixed; inset: 0; z-index: 800;
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  background: rgba(5,11,24,.65);
+  align-items: center; justify-content: center;
+}
+#modal-ov.show { display: flex; }
+
+.modal-box {
+  max-width: 500px; width: 92%;
+  padding: 2.5rem; border-radius: 24px;
+  background: rgba(240,192,64,.15);
+  backdrop-filter: blur(28px) saturate(2.5) brightness(1.15);
+  -webkit-backdrop-filter: blur(28px) saturate(2.5) brightness(1.15);
+  border: 1px solid rgba(240,192,64,.35);
+  box-shadow: 0 24px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,220,100,.4);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute; top: 1.2rem; right: 1.2rem;
+  background: none; border: none; cursor: pointer;
+  font-size: .58rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(240,192,64,.7); font-family: var(--font-b);
+  transition: color .2s;
+}
+.modal-close:hover { color: var(--gold); }
+
+.modal-title { font-family: var(--font-d); font-size: 2.2rem; letter-spacing: .06em; margin-bottom: 2rem; color: var(--gold); }
+
+.modal-list { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1.5rem; }
+.modal-player {
+  font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: .5rem 0; border-bottom: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: center; gap: .5rem; color: var(--white);
+}
+.modal-player::before { content: ''; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+.modal-foot {
+  margin-top: 2rem; padding-top: 1.2rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: flex; justify-content: space-between;
+  font-size: .55rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+  color: rgba(240,192,64,.5);
+}
+
+/* ══════════════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════════════ */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+.reveal-l {
+  opacity: 0; transform: translateX(-24px);
+  transition: opacity .8s ease, transform .8s ease;
+}
+.reveal.on, .reveal-l.on { opacity: 1; transform: translate(0,0); }
+
+/* ══════════════════════════════════════════════
+   DIVIDER
+══════════════════════════════════════════════ */
+.divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240,192,64,.2), transparent);
+  position: relative; z-index: 2;
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  nav { display: none; }
+  .ham { display: flex; }
+  .scores-wrap, .cal-grid { grid-template-columns: 1fr; }
+  .partners-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  header { top: .6rem; width: calc(100% - 2rem); padding: .85rem 1.25rem; }
+  #hero { padding: 7rem 1.5rem 4rem; }
+  .section { padding: 4rem 1.5rem; }
+  .hero-ghost { display: none; }
+  .partners-grid { grid-template-columns: repeat(2, 1fr); }
+  .tbl-head, .trow { grid-template-columns: 36px 1fr 50px 36px 50px; padding: .65rem 1rem; }
+}
+@media (max-width: 480px) {
+  .partners-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal-list { grid-template-columns: 1fr; }
+  .scores-wrap { gap: 1rem; }
+}
+</style>
 </head>
 <body>
 
-    <div class="noise"></div>
-    <div id="cursor"></div>
-    <div class="cursor-follower"></div>
+<!-- BACKGROUND LAYERS -->
+<div class="bg-canvas">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+</div>
 
-    <div class="futsal-pitch-bg">
-        <div class="pitch-lines parallax-pitch">
-            <div class="pitch-center-line"></div>
-            <div class="pitch-center-circle"></div>
+<svg class="pitch-wm" viewBox="0 0 800 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="2" y="2" width="796" height="496" stroke="#E8B84B" stroke-width="2"/>
+  <line x1="400" y1="0" x2="400" y2="500" stroke="#E8B84B" stroke-width="1.5"/>
+  <circle cx="400" cy="250" r="85" stroke="#E8B84B" stroke-width="1.5"/>
+  <circle cx="400" cy="250" r="5" fill="#E8B84B"/>
+  <rect x="2" y="170" width="100" height="160" stroke="#E8B84B" stroke-width="1.5"/>
+  <rect x="698" y="170" width="100" height="160" stroke="#E8B84B" stroke-width="1.5"/>
+  <rect x="2" y="200" width="52" height="100" stroke="#E8B84B" stroke-width="1.5"/>
+  <rect x="746" y="200" width="52" height="100" stroke="#E8B84B" stroke-width="1.5"/>
+  <circle cx="100" cy="250" r="38" stroke="#E8B84B" stroke-width="1" stroke-dasharray="4 4"/>
+  <circle cx="700" cy="250" r="38" stroke="#E8B84B" stroke-width="1" stroke-dasharray="4 4"/>
+</svg>
+
+<div class="noise"></div>
+
+<!-- CURSOR -->
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+
+<!-- MODAL -->
+<div id="modal-ov" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">Fermer ✕</button>
+    <div class="modal-title" id="modal-title">GROUPE A</div>
+    <div class="modal-list" id="modal-content"></div>
+    <div class="modal-foot">
+      <span>Riantec Futsal</span>
+      <span>Entente Rive Gauche</span>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <a href="#hero" class="logo-link">
+    <img src="logo erg.png" alt="ERG Logo">
+    <div>
+      <div class="logo-name">Riantec Futsal</div>
+      <div class="logo-sub">Entente Rive Gauche</div>
+    </div>
+  </a>
+  <nav>
+    <a href="#hero"        class="nav-a">Accueil</a>
+    <a href="#scores"      class="nav-a">Scores</a>
+    <a href="#classement"  class="nav-a">Classement</a>
+    <a href="#calendrier"  class="nav-a">Calendrier</a>
+    <a href="#partenaires" class="nav-a">Partenaires</a>
+    <a href="#contact"     class="nav-a cta">Contact</a>
+  </nav>
+  <button class="ham" id="ham" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div id="mob-menu">
+  <a href="#hero">Accueil</a>
+  <a href="#scores">Scores</a>
+  <a href="#classement">Classement</a>
+  <a href="#calendrier">Calendrier</a>
+  <a href="#partenaires">Partenaires</a>
+  <a href="#contact" style="color:var(--gold)">Contact</a>
+</div>
+
+<!-- ═══════ HERO ═══════ -->
+<section id="hero">
+  <div class="hero-ghost">ERG</div>
+
+  <div class="hero-eyebrow">Entente Rive Gauche · District 1 Morbihan</div>
+
+  <h1 class="hero-title">
+    Riantec<br>
+    <span class="stroke">FUTSAL</span>
+  </h1>
+
+  <div class="hero-meta">
+    <div class="hero-pill">Fondé en <span>2019</span></div>
+    <div class="hero-pill">Pays de <span>Lorient</span>, Bretagne</div>
+    <div class="hero-pill">Gymnase de <span>Kerdurand</span></div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-bar"></div>
+    Défiler
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ SCORES ═══════ -->
+<section id="scores" class="section">
+  <div class="reveal-l">
+    <div class="sec-pill">Journée 6</div>
+    <h2 class="sec-title">LES <span class="dim">SCORES</span></h2>
+  </div>
+
+  <div class="scores-wrap">
+
+    <div class="reveal" style="transition-delay:.05s">
+      <!-- DÉFAITE → classe loss-card sur score-glass -->
+      <div class="score-glass glass loss-card">
+        <div class="eq-badge a">Équipe A</div>
+        <div class="score-j">
+          <span>J10 · District 1 · Championnat</span>
+          <span class="result-badge loss">Défaite</span>
         </div>
+        <div class="score-body">
+          <div class="team away">Locoal-Mendon</div>
+          <div class="digits">
+            <span>7</span>
+            <span class="dig-sep">–</span>
+            <span>6</span>
+          </div>
+          <div class="team">ERG (A)</div>
+        </div>
+        <div class="scorers-row">
+          <span class="sc-chip">⚽ Hugo ×3</span>
+          <span class="sc-chip">⚽ Thibault ×3</span>
+        </div>
+      </div>
     </div>
 
-    <!-- MODAL CONVOCATIONS -->
-    <div id="modal-overlay" onclick="closeModal()">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <button onclick="closeModal()" class="absolute top-4 right-4 font-black uppercase text-[10px] tracking-widest border-b-2 border-black">Fermer</button>
-            <h3 id="modal-title" class="font-huge text-2xl md:text-3xl mb-8">CONVOCATIONS</h3>
-            <div id="modal-content" class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm font-black uppercase tracking-tight">
-                <!-- Injecté par JS -->
-            </div>
-            <div class="mt-10 pt-6 border-t border-black/10 flex justify-between items-center opacity-60">
-                <span class="text-[10px] font-bold uppercase tracking-widest">Riantec Futsal Club</span>
-                <span class="text-[10px] font-bold uppercase tracking-widest italic">Entente Rive Gauche</span>
-            </div>
+    <div class="reveal" style="transition-delay:.15s">
+      <!-- DÉFAITE → classe loss-card sur score-glass -->
+      <div class="score-glass glass loss-card">
+        <div class="eq-badge b">Équipe B</div>
+        <div class="score-j">
+          <span>J4 · District 1 · Championnat</span>
+          <span class="result-badge loss">Défaite</span>
         </div>
+        <div class="score-body">
+          <div class="team">ERG (B)</div>
+          <div class="digits">
+            <span>3</span>
+            <span class="dig-sep">–</span>
+            <span>11</span>
+          </div>
+          <div class="team away">LE SOURN SP</div>
+        </div>
+        <div class="scorers-row">
+          <span class="sc-chip">⚽ Thyméo</span>
+          <span class="sc-chip">⚽ Juliann</span>
+          <span class="sc-chip">⚽ Néven</span>
+        </div>
+      </div>
     </div>
 
-    <!-- HEADER & NAVIGATION -->
-    <header id="main-header" class="fixed top-0 left-0 w-full p-6 md:p-8 flex justify-between items-center z-[1000] transition-colors duration-500">
-        <div class="overflow-hidden flex items-center logo-container">
-            <a href="#accueil" class="flex items-center">
-                <img src="logo erg.png" alt="Logo Entente Rive Gauche" class="w-12 h-12 md:w-16 md:h-16 object-contain logo-club">
-            </a>
+  </div>
+
+  <!-- Boutons scores sous les deux cartes -->
+  <div class="ext-btn-row reveal">
+    <a href="https://www.sportcorico.com/clubs/riantec-futsal-club/riantec-rfc" target="_blank" rel="noopener" class="ext-btn">Scores Équipe A →</a>
+    <a href="https://www.sportcorico.com/clubs/riantec-futsal-club/riantec-rfc-1" target="_blank" rel="noopener" class="ext-btn">Scores Équipe B →</a>
+  </div>
+
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ CLASSEMENT ═══════ -->
+<section id="classement" class="section">
+  <div class="reveal-l">
+    <div class="sec-pill">Poule Unique</div>
+    <h2 class="sec-title">CLASSEMENT <span class="dim">D1</span></h2>
+  </div>
+
+  <div class="reveal">
+    <div class="table-glass glass">
+      <div class="tbl-head">
+        <div class="th">#</div>
+        <div class="th">Club</div>
+        <div class="th c">PTS</div>
+        <div class="th c">J</div>
+        <div class="th c">DIFF</div>
+      </div>
+
+      <div class="trow">
+        <div class="t-rank gold">1</div>
+        <div class="t-club">Auray Football Club <span class="tag-ldr">Leader</span></div>
+        <div class="t-pts g">30</div>
+        <div class="t-j">11</div>
+        <div class="t-diff pos">+44</div>
+      </div>
+      <div class="trow">
+        <div class="t-rank gold">2</div>
+        <div class="t-club">Le Sourn SP C</div>
+        <div class="t-pts g">30</div>
+        <div class="t-j">11</div>
+        <div class="t-diff pos">+50</div>
+      </div>
+      <div class="trow">
+        <div class="t-rank gold">3</div>
+        <div class="t-club">Locoal Mendon</div>
+        <div class="t-pts">22</div>
+        <div class="t-j">11</div>
+        <div class="t-diff neu">0</div>
+      </div>
+      <div class="trow">
+        <div class="t-rank">4</div>
+        <div class="t-club">Erdeven Etel Foot</div>
+        <div class="t-pts">20</div>
+        <div class="t-j">11</div>
+        <div class="t-diff pos">+35</div>
+      </div>
+      <div class="trow erg">
+        <div class="t-rank">5</div>
+        <div class="t-club">Riantec R.F.C (A) <span class="tag-erg"></span></div>
+        <div class="t-pts g">19</div>
+        <div class="t-j">11</div>
+        <div class="t-diff pos">+40</div>
+      </div>
+      <div class="trow">
+        <div class="t-rank">6</div>
+        <div class="t-club">Carnac Futsal Club</div>
+        <div class="t-pts">18</div>
+        <div class="t-j">11</div>
+        <div class="t-diff pos">+1</div>
+      </div>
+      <div class="trow">
+        <div class="t-rank">7</div>
+        <div class="t-club">Port Louis ES Sud</div>
+        <div class="t-pts">14</div>
+        <div class="t-j">11</div>
+        <div class="t-diff pos">+7</div>
+      </div>
+      <div class="trow">
+        <div class="t-rank">8</div>
+        <div class="t-club">Pontivy GS</div>
+        <div class="t-pts">9</div>
+        <div class="t-j">11</div>
+        <div class="t-diff neg">-16</div>
+      </div>
+      <div class="trow">
+        <div class="t-rank">9</div>
+        <div class="t-club">Ste Anne d'Auray ASC</div>
+        <div class="t-pts">4</div>
+        <div class="t-j">11</div>
+        <div class="t-diff neg">-49</div>
+      </div>
+      <div class="trow erg">
+        <div class="t-rank">10</div>
+        <div class="t-club">Riantec R.F.C (B) <span class="tag-erg"></span></div>
+        <div class="t-pts g">3</div>
+        <div class="t-j">11</div>
+        <div class="t-diff neg">-54</div>
+      </div>
+      <div class="trow">
+        <div class="t-rank">11</div>
+        <div class="t-club">FC Belugas Ria</div>
+        <div class="t-pts">0</div>
+        <div class="t-j">10</div>
+        <div class="t-diff neg">-58</div>
+      </div>
+    </div>
+    <div class="tbl-foot">
+      <div class="tbl-leg"><div class="leg-sq"></div> Nos équipes</div>
+      <div class="tbl-date">Mise à jour : Février 2026</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ CALENDRIER ═══════ -->
+<section id="calendrier" class="section">
+  <div class="reveal-l">
+    <div class="sec-pill">Prochains matchs</div>
+    <h2 class="sec-title">CALEN<span class="dim">DRIER</span></h2>
+  </div>
+
+  <div class="cal-grid">
+
+    <div class="reveal" style="transition-delay:.05s">
+      <div class="cal-card glass-gold">
+        <div class="cal-eq"><span class="eq-badge a">Équipe A</span></div>
+        <div class="cal-date-big">19</div>
+        <div class="cal-month">Février 2026</div>
+        <div class="cal-vs"><span class="vs">VS </span>Le Sourn SP</div>
+        <div class="cal-infos">
+          <div class="cal-info">📍 <b>Domicile</b> · Gymnase de Kerdurand</div>
+          <div class="cal-info">⏰ Coup d'envoi : <b>21h00</b></div>
+          <div class="cal-info">🏆 District 1 · <b>Journée 13</b></div>
         </div>
-        
-        <nav class="hidden lg:flex gap-8">
-            <a href="#accueil" class="nav-link">Accueil</a>
-            <a href="#scores" class="nav-link">Scores</a>
-            <a href="#classement" class="nav-link">Classement</a>
-            <a href="#calendrier" class="nav-link">Calendrier</a>
-            <a href="#partenaires" class="nav-link">Partenaires</a>
-            <a href="#contact" class="nav-link text-[#FFD700]">Contact</a>
-        </nav>
-
-        <button id="menu-toggle" class="lg:hidden flex flex-col gap-1.5 z-[1001]">
-            <div class="w-8 h-0.5 bg-white transition-colors duration-300"></div>
-            <div class="w-8 h-0.5 bg-white transition-colors duration-300"></div>
-            <div class="w-5 h-0.5 bg-[#FFD700] self-end transition-colors duration-300"></div>
-        </button>
-    </header>
-
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="fixed inset-0 bg-[#000E21] z-[999] translate-x-full flex flex-col items-center justify-center gap-8 text-center">
-        <a href="#accueil" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Accueil</a>
-        <a href="#scores" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Scores</a>
-        <a href="#classement" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Classement</a>
-        <a href="#calendrier" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Calendrier</a>
-        <a href="#partenaires" class="font-huge text-4xl hover:text-[#FFD700] mobile-nav-link">Partenaires</a>
-        <a href="#contact" class="font-huge text-4xl text-[#FFD700] mobile-nav-link">Contact</a>
+        <button class="convoc-btn a" onclick="openConvocs('A')">Voir les convocations</button>
+        <div class="ext-btn-row" style="margin-top:.75rem">
+          <a href="https://www.sportcorico.com/clubs/riantec-futsal-club/riantec-rfc" target="_blank" rel="noopener" class="ext-btn">Calendrier Équipe A →</a>
+        </div>
+      </div>
     </div>
 
-    <!-- SECTION 1: ACCUEIL -->
-    <section id="accueil" class="h-screen flex items-center justify-center relative">
-        <div class="text-center z-10">
-            <div class="overflow-hidden mb-4">
-                <span class="block text-xs uppercase tracking-[0.8em] text-[#FFD700] hero-reveal italic">Entente Rive Gauche</span>
-            </div>
-            <h1 class="font-huge text-[12vw] md:text-[13vw] leading-[0.8] hero-reveal">
-                Riantec<br><span class="outline-text text-[#FFD700]/20">FUTSAL</span>
-            </h1>
-            <div class="mt-8 overflow-hidden">
-                <span class="block text-sm font-bold uppercase tracking-widest opacity-60 hero-reveal">Riantec Futsal Club</span>
-            </div>
+    <div class="reveal" style="transition-delay:.15s">
+      <div class="cal-card glass">
+        <div class="cal-eq"><span class="eq-badge b">Équipe B</span></div>
+        <div class="cal-date-big">19</div>
+        <div class="cal-month">Février 2026</div>
+        <div class="cal-vs"><span class="vs">VS </span>SAINT ANNE D'AURAY</div>
+        <div class="cal-infos">
+          <div class="cal-info">📍 <b>Extérieur</b> · Salle Roger Le Manach</div>
+          <div class="cal-info">⏰ Coup d'envoi : <b>20h30</b></div>
+          <div class="cal-info">🏆 District 1 · <b>Journée 13</b></div>
         </div>
-        <div class="absolute bottom-10 left-10 flex gap-4 text-[10px] uppercase tracking-widest font-bold">
-            <span class="opacity-40">Fondé en 2019</span>
-            <span class="text-[#FFD700]">Pays de Lorient, Bretagne</span>
+        <button class="convoc-btn b" onclick="openConvocs('B')">Voir les convocations</button>
+        <div class="ext-btn-row" style="margin-top:.75rem">
+          <a href="https://www.sportcorico.com/clubs/riantec-futsal-club/riantec-rfc-1" target="_blank" rel="noopener" class="ext-btn">Calendrier Équipe B →</a>
         </div>
-    </section>
+      </div>
+    </div>
 
-    <!-- SECTION 2: SCORES -->
-    <section id="scores" class="section-padding bg-white text-[#001A3D] relative overflow-hidden dark-trigger">
-        <div class="behind-text font-huge outline-text opacity-10" style="color:#001A3D; -webkit-text-stroke: 1px #001A3D;">RÉSULTATS</div>
-        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-4">
-            <h2 class="font-huge text-5xl md:text-7xl reveal-up">LES <span class="text-blue-900">SCORES</span></h2>
-            <div class="flex gap-2 reveal-up">
-                <span class="px-3 py-1 bg-blue-900 text-white text-[10px] font-black uppercase tracking-tighter">District 1</span>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div class="reveal-up">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="w-12 h-0.5 bg-blue-900"></div>
-                    <h3 class="font-huge text-2xl">ÉQUIPE A</h3>
-                </div>
-                <div class="p-6 border-l-4 border-green-500 bg-gray-50 shadow-sm relative overflow-hidden">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-[10px] font-bold uppercase tracking-widest opacity-60">J6 • Championnat</span>
-                        <span class="bg-[#001A3D] text-[#FF0000] px-3 py-1 rounded-full text-[9px] font-black uppercase">Défaite</span>
-                    </div>
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="font-huge text-xl opacity-40">Locoal-Mendon</span>
-                        <div class="flex items-center gap-4">
-                            <span class="font-huge text-4xl">7</span>
-                            <span class="text-xl opacity-30">-</span>
-                            <span class="font-huge text-4xl">6</span>
-                        </div>
-                        <span class="font-huge text-xl">ERG (A)</span>
-                    </div>
-                    <div class="pt-4 border-t border-black/5">
-                        <div class="flex flex-wrap gap-x-4 gap-y-1">
-                            <span class="scorer-tag">⚽ Hugo (x3)</span>
-                            <span class="scorer-tag">⚽ Thibault (x3)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="reveal-up">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="w-12 h-0.5 bg-blue-900/30"></div>
-                    <h3 class="font-huge text-2xl">ÉQUIPE B</h3>
-                </div>
-                <div class="p-6 border-l-4 border-blue-500 bg-gray-50 shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-[10px] font-bold uppercase tracking-widest opacity-60">J6 • Championnat</span>
-                        <span class="bg-[#001A3D] text-[#FF0000] px-3 py-1 rounded-full text-[9px] font-black uppercase">Défaite</span>
-                    </div>
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="font-huge text-xl">ERG (B)</span>
-                        <div class="flex items-center gap-4">
-                            <span class="font-huge text-4xl">3</span>
-                            <span class="text-xl opacity-30">-</span>
-                            <span class="font-huge text-4xl">8</span>
-                        </div>
-                        <span class="font-huge text-xl opacity-40">ESSOR</span>
-                    </div>
-                    <div class="pt-4 border-t border-black/5">
-                        <div class="flex flex-wrap gap-x-4 gap-y-1">
-                            <span class="scorer-tag">⚽ Dylan (x2)</span>
-                            <span class="scorer-tag">⚽ Juliann</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  </div>
+</section>
 
-    <!-- SECTION CLASSEMENT UNIQUE (11 ÉQUIPES) -->
-    <section id="classement" class="section-padding bg-[#000E21] relative overflow-hidden">
-        <div class="behind-text font-huge outline-text opacity-5">STANDINGS</div>
-        <h2 class="font-huge text-5xl md:text-7xl mb-16 reveal-up">LE <span class="text-[#FFD700]">CLASSEMENT</span></h2>
-        
-        <div class="max-w-4xl mx-auto reveal-up">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-huge text-xl flex items-center gap-4">
-                    <span class="text-[#FFD700]">DISTRICT 1</span> MORBIHAN
-                </h3>
-                <span class="text-[10px] font-black bg-white/10 px-3 py-1 rounded">11 ÉQUIPES</span>
-            </div>
-            
-            <div class="overflow-x-auto card-glass p-1">
-                <table class="w-full text-left text-xs font-bold uppercase tracking-wider">
-                    <thead class="bg-white/5 text-[#FFD700]">
-                        <tr>
-                            <th class="p-4 w-12">#</th>
-                            <th class="p-4">Club</th>
-                            <th class="p-4 text-center">PTS</th>
-                            <th class="p-4 text-center">J</th>
-                            <th class="p-4 text-center">DIFF</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="table-row">
-                            <td class="p-4">1</td>
-                            <td class="p-4 flex items-center gap-2">
-                                AURAY FOOTBALL CLUB <span class="text-[8px] bg-[#FFD700] text-black px-1 rounded">LEADER</span>
-                            </td>
-                            <td class="p-4 text-center">27</td>
-                            <td class="p-4 text-center">10</td>
-                            <td class="p-4 text-center">+34</td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-4">2</td>
-                            <td class="p-4">LE SOURN SP</td>
-                            <td class="p-4 text-center">27</td>
-                            <td class="p-4 text-center">10</td>
-                            <td class="p-4 text-center">+42</td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-4">3</td>
-                            <td class="p-4">LOCOAL MENDON</td>
-                            <td class="p-4 text-center">22</td>
-                            <td class="p-4 text-center">11</td>
-                            <td class="p-4 text-center">0</td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-4">4</td>
-                            <td class="p-4">ERDEVEN ETEL FOOT</td>
-                            <td class="p-4 text-center">20</td>
-                            <td class="p-4 text-center">11</td>
-                            <td class="p-4 text-center">+35</td>
-                        </tr>
-                        <tr class="table-row highlight">
-                            <td class="p-4">5</td>
-                            <td class="p-4">RIANTEC E.R.G (A)</td>
-                            <td class="p-4 text-center">19</td>
-                            <td class="p-4 text-center">11</td>
-                            <td class="p-4 text-center">+40</td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-4">6</td>
-                            <td class="p-4">CARNAC FUTSAL CLUB</td>
-                            <td class="p-4 text-center">15</td>
-                            <td class="p-4 text-center">10</td>
-                            <td class="p-4 text-center">-1</td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-4">7</td>
-                            <td class="p-4">PORT LOUIS ES SUD</td>
-                            <td class="p-4 text-center">14</td>
-                            <td class="p-4 text-center">10</td>
-                            <td class="p-4 text-center">-1</td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-4">8</td>
-                            <td class="p-4">PONTIVY GS 2</td>
-                            <td class="p-4 text-center">9</td>
-                            <td class="p-4 text-center">11</td>
-                            <td class="p-4 text-center">-16</td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-4">9</td>
-                            <td class="p-4">STE ANNE D AURAY ASC</td>
-                            <td class="p-4 text-center">4</td>
-                            <td class="p-4 text-center">11</td>
-                            <td class="p-4 text-center">-49</td>
-                        </tr>
-                        <tr class="table-row highlight">
-                            <td class="p-4">10</td>
-                            <td class="p-4">RIANTEC E.R.G (B)</td>
-                            <td class="p-4 text-center">3</td>
-                            <td class="p-4 text-center">10</td>
-                            <td class="p-4 text-center">-46</td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-4">11</td>
-                            <td class="p-4">FC BELUGAS RIA</td>
-                            <td class="p-4 text-center">0</td>
-                            <td class="p-4 text-center">9</td>
-                            <td class="p-4 text-center">-48</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-4 flex flex-col md:flex-row justify-between items-start gap-4">
-                <div class="flex gap-4 text-[9px] font-bold uppercase tracking-widest opacity-40">
-                    <div class="flex items-center gap-1"><div class="w-2 h-2 bg-[#FFD700]"></div> Nos équipes</div>
-                    <div>Mise à jour : Janvier 2026</div>
-                </div>
-                <div class="text-[9px] font-bold uppercase tracking-widest opacity-20 italic">Poule Unique - District 1</div>
-            </div>
-        </div>
-    </section>
+<div class="divider"></div>
 
-    <!-- SECTION 4: CALENDRIER & CONVOCATIONS -->
-    <section id="calendrier" class="section-padding relative">
-        <h2 class="font-huge text-5xl md:text-7xl mb-16 text-right reveal-up">CALENDRIER</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl ml-auto">
-            <div class="card-glass p-8 flex flex-col justify-between reveal-up border-l-2 border-[#FFD700]">
-                <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="px-2 py-1 bg-[#FFD700] text-[#001A3D] text-[10px] font-black uppercase tracking-widest">ÉQUIPE A</span>
-                        <div class="text-[#FFD700] font-huge text-xl">19 FEV.</div>
-                    </div>
-                    <h3 class="font-huge text-2xl mb-2">VS LE SOURN SP</h3>
-                    <div class="space-y-1 text-xs uppercase tracking-widest font-bold opacity-60 mb-8">
-                        <p>📍 Domicile • Gymnase de Kerdurand</p>
-                        <p>⏰ Coup d'envoi : 21h00</p>
-                        <p>🏆 District 1 - J13</p>
-                    </div>
-                </div>
-                <button onclick="openConvocs('A')" class="w-full py-4 bg-transparent border border-[#FFD700] text-[#FFD700] text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#FFD700] hover:text-[#001A3D] transition-all">
-                    VOIR CONVOCATIONS
-                </button>
-            </div>
+<!-- ═══════ PARTENAIRES ═══════ -->
+<section id="partenaires" class="section">
+  <div class="reveal-l">
+    <div class="sec-pill">Ils nous soutiennent</div>
+    <h2 class="sec-title">NOS <span class="dim">PARTENAIRES</span></h2>
+  </div>
+  <div class="partners-grid reveal">
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="pizza minahouet.jpg" alt="Pizza Minahouet"></div><div><div class="p-name">Pizza Minahouet</div><div class="p-cat">Pizzeria Locale</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="scouiller.png" alt="Scouiller"></div><div><div class="p-name">N. Scouiller</div><div class="p-cat">Couverture · Zinguerie</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="brioche.png" alt="Brioche du Riant"></div><div><div class="p-name">Brioche du Riant</div><div class="p-cat">Boulangerie</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="rigado.png" alt="Rigad'o Bar"></div><div><div class="p-name">Rigad'o Bar</div><div class="p-cat">Bar</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="optic 2000.png" alt="Optic 2000"></div><div><div class="p-name">Optic 2000</div><div class="p-cat">Opticien</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="lamour.jpeg" alt="Bar Chez Lamour"></div><div><div class="p-name">Bar Chez Lamour</div><div class="p-cat">Bar</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="culs sales.png" alt="Les Culs Salés"></div><div><div class="p-name">Les Culs Salés</div><div class="p-cat">Restaurant</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="breizh pet.jpeg" alt="Breizh Pet 56"></div><div><div class="p-name">Breizh Pet 56</div><div class="p-cat">Garde d'animaux</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="flotylu.png" alt="Flotylu"></div><div><div class="p-name">Flotylu</div><div class="p-cat">Foodtruck</div></div></div>
+    <div class="partner-cell glass"><div class="p-img-ring"><img src="delice.jpg" alt="Délices de la Pointe"></div><div><div class="p-name">Délices de la Pointe</div><div class="p-cat">Boulangerie</div></div></div>
+  </div>
+</section>
 
-            <div class="card-glass p-8 flex flex-col justify-between reveal-up border-l-2 border-white/20">
-                <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="px-2 py-1 bg-white/10 text-white text-[10px] font-black uppercase tracking-widest">ÉQUIPE B</span>
-                        <div class="text-[#FFD700] font-huge text-xl">12 FEV.</div>
-                    </div>
-                    <h3 class="font-huge text-2xl mb-2">VS LE SOURN SP</h3>
-                    <div class="space-y-1 text-xs uppercase tracking-widest font-bold opacity-60 mb-8">
-                        <p>📍Domicile • Gymnase de Kerdurand</p>
-                        <p>⏰ Coup d'envoi : 21h00</p>
-                        <p>🏆 District 1 - J4</p>
-                    </div>
-                </div>
-                <button onclick="openConvocs('B')" class="w-full py-4 bg-transparent border border-white/30 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-[#001A3D] transition-all">
-                    VOIR CONVOCATIONS
-                </button>
-            </div>
-        </div>
-    </section>
+<div class="divider"></div>
 
-    <!-- SECTION 5: PARTENAIRES -->
-    <section id="partenaires" class="section-padding bg-[#000E21] relative z-10">
-        <h2 class="font-huge text-4xl md:text-6xl mb-16 text-center reveal-up">NOS PARTENAIRES</h2>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
-            
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="pizza minahouet.jpg" alt="Pizza Minahouet" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Pizza Minahouet</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Pizzeria Locale</p>
-            </div>
+<!-- ═══════ CONTACT / FOOTER ═══════ -->
+<footer id="contact">
+  <div class="contact-inner">
+    <div class="sec-pill reveal-l">Rejoignez l'aventure</div>
+    <h2 class="sec-title reveal-l">PRENDRE<br><span class="g">CONTACT</span></h2>
+    <p class="contact-desc reveal">
+      Une question, une envie de rejoindre l'aventure Riantec Futsal ?<br>
+      On est disponibles sur nos réseaux ou par email.
+    </p>
+    <div class="contact-links reveal">
+      <a href="/cdn-cgi/l/email-protection#304259515e44555356454443515c70575d51595c1e535f5d" class="clink email">✉ Email</a>
+      <a href="https://www.instagram.com/riantec_futsal/" target="_blank" rel="noopener" class="clink social">Instagram</a>
+      <a href="https://www.facebook.com/riantecfutsal/" target="_blank" rel="noopener" class="clink social">Facebook</a>
+    </div>
+    <div class="footer-bar reveal">
+      <div class="f-copy">© 2019 Riantec Futsal Club</div>
+      <div class="f-addr">Gymnase de Kerdurand · 56670 Riantec</div>
+      <div class="f-cred">Design : Dorian Meilleur</div>
+    </div>
+  </div>
+</footer>
 
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="scouiller.png" alt="Scouiller" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Nicolas Scouiller Couverture</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Couverture / Zinguerie</p>
-            </div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ─── CURSOR ─────────────────────────────────── */
+const dot  = document.getElementById('cur-dot');
+const ring = document.getElementById('cur-ring');
+let mx=0, my=0, rx=0, ry=0, moved=false;
+dot.style.opacity='0'; ring.style.opacity='0';
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  if(!moved){ moved=true; dot.style.opacity='1'; ring.style.opacity='1'; }
+});
+(function loop(){
+  rx += (mx-rx)*.13; ry += (my-ry)*.13;
+  dot.style.left  = mx+'px'; dot.style.top  = my+'px';
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(loop);
+})();
 
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="brioche.png" alt="Brioche du Riant" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Brioche du Riant</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Boulangerie</p>
-            </div>
+/* ─── SCROLL REVEAL ──────────────────────────── */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target); } });
+}, { threshold: .07 });
+document.querySelectorAll('.reveal, .reveal-l').forEach(el => io.observe(el));
 
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="rigado.png" alt="Rigad'o Bar" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Rigad'o Bar</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Bar</p>
-            </div>
+/* ─── HAM ────────────────────────────────────── */
+const ham  = document.getElementById('ham');
+const mob  = document.getElementById('mob-menu');
+let open   = false;
+ham.addEventListener('click', () => {
+  open = !open;
+  mob.classList.toggle('open', open);
+  const s = ham.querySelectorAll('span');
+  if(open){ s[0].style.cssText='transform:rotate(45deg) translate(5px,5px)'; s[1].style.opacity='0'; s[2].style.cssText='transform:rotate(-45deg) translate(5px,-5px);width:24px'; }
+  else { s[0].style.cssText=''; s[1].style.cssText=''; s[2].style.cssText=''; }
+});
+mob.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  open=false; mob.classList.remove('open');
+  ham.querySelectorAll('span').forEach(s => s.style.cssText='');
+}));
 
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="optic 2000.png" alt="Optic 2000" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Optic 2000</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Opticien</p>
-            </div>
+/* ─── SMOOTH SCROLL ──────────────────────────── */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+  });
+});
 
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="lamour.jpeg" alt="Bar Chez Lamour" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Bar Chez Lamour</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Bar</p>
-            </div>
+/* ─── PARALLAX BLOBS ─────────────────────────── */
+window.addEventListener('scroll', () => {
+  const s = window.scrollY * .004;
+  document.querySelectorAll('.blob').forEach((b,i) => {
+    const d = (i%2===0?1:-1) * s * (i+1) * .6;
+    b.style.transform = `translateY(${d}px)`;
+  });
+}, { passive: true });
 
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="culs sales.png" alt="Les Culs Salés" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Les Culs Salés</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Restaurant</p>
-            </div>
+/* ─── MODAL ──────────────────────────────────── */
+const convocs = { A: ["À venir"], B: ["À venir"] };
 
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="breizh pet.jpeg" alt="Breizh Pet 56" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Breizh Pet 56</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Garde d'animaux</p>
-            </div>
-
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="flotylu.png" alt="Flotylu" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Flotylu</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Foodtruck</p>
-            </div>
-
-            <div class="card-glass p-6 flex flex-col items-center text-center reveal-up">
-                <div class="logo-bubble">
-                    <img src="delice.jpg" alt="Aux Délices de la Pointe" class="partner-logo">
-                </div>
-                <h4 class="text-[#FFD700] font-huge text-[10px] mb-1">Aux Délices de la Pointe</h4>
-                <p class="text-gray-500 text-[8px] font-bold uppercase tracking-widest">Boulangerie</p>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer id="contact" class="section-padding text-center relative overflow-hidden bg-gradient-to-t from-black to-transparent">
-        <div class="py-20">
-            <h2 class="font-huge text-[10vw] leading-none mb-10 reveal-up">PRENDRE<br><span class="text-[#FFD700]">CONTACT</span></h2>
-            <div class="flex flex-wrap justify-center gap-8 md:gap-12 text-xs font-black tracking-widest uppercase mb-20">
-                <a href="mailto:riantecfutsal@gmail.com" class="hover:text-[#FFD700] transition-colors border-b border-transparent hover:border-[#FFD700] pb-1">Email</a>
-                <a href="https://www.instagram.com/riantec_futsal/" target="_blank" rel="noopener noreferrer" class="hover:text-[#FFD700] transition-colors border-b border-transparent hover:border-[#FFD700] pb-1">Instagram</a>
-                <a href="https://www.facebook.com/riantecfutsal/" target="_blank" rel="noopener noreferrer" class="hover:text-[#FFD700] transition-colors border-b border-transparent hover:border-[#FFD700] pb-1">Facebook</a>
-            </div>
-            <p class="max-w-xl mx-auto text-gray-400 text-xs italic">
-                Riantec Futsal Club - Entente Rive Gauche (ERG) <br> 
-                Gymnase de Kerdurand, 56670 Riantec.
-            </p>
-        </div>
-        <div class="mt-20 flex justify-between items-center text-[10px] opacity-40 uppercase tracking-widest font-bold">
-            <span>© 2019 Riantec Futsal</span>
-            <img src="logo erg.png" alt="ERG" class="w-8 h-8 opacity-50">
-            <span>Crédit : Dorian Meilleur</span>
-        </div>
-    </footer>
-
-    <script>
-        const dataConvocs = {
-            'A': ["À venir"],
-            'B': ["À venir"]
-        };
-
-        window.openConvocs = function(equipe) {
-            const modal = document.getElementById('modal-overlay');
-            const title = document.getElementById('modal-title');
-            const content = document.getElementById('modal-content');
-            
-            title.innerText = `GROUPE ${equipe}`;
-            content.innerHTML = dataConvocs[equipe].map(nom => `<div>- ${nom}</div>`).join('');
-            
-            modal.style.display = 'flex';
-            gsap.fromTo(".modal-card", 
-                { scale: 0.8, opacity: 0, y: 20 },
-                { scale: 1, opacity: 1, y: 0, duration: 0.5, ease: "power4.out" }
-            );
-        };
-
-        window.closeModal = function() {
-            gsap.to(".modal-card", { 
-                scale: 0.8, opacity: 0, y: 20, duration: 0.3, ease: "power4.in",
-                onComplete: () => {
-                    document.getElementById('modal-overlay').style.display = 'none';
-                }
-            });
-        };
-
-        window.addEventListener('load', () => {
-            gsap.registerPlugin(ScrollTrigger);
-
-            const cursor = document.getElementById('cursor');
-            const follower = document.querySelector('.cursor-follower');
-            document.addEventListener('mousemove', (e) => {
-                gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0 });
-                gsap.to(follower, { x: e.clientX - 20, y: e.clientY - 20, duration: 0.3 });
-            });
-
-            const header = document.getElementById('main-header');
-            ScrollTrigger.create({
-                trigger: ".dark-trigger",
-                start: "top 80px",
-                end: "bottom 80px",
-                onEnter: () => header.classList.add('header-light'),
-                onLeave: () => header.classList.remove('header-light'),
-                onEnterBack: () => header.classList.add('header-light'),
-                onLeaveBack: () => header.classList.remove('header-light')
-            });
-
-            const menuToggle = document.getElementById('menu-toggle');
-            const mobileMenu = document.getElementById('mobile-menu');
-            let isMenuOpen = false;
-
-            menuToggle.addEventListener('click', () => {
-                isMenuOpen = !isMenuOpen;
-                gsap.to(mobileMenu, { x: isMenuOpen ? '0%' : '100%', duration: 0.8, ease: "power4.inOut" });
-                const bars = menuToggle.children;
-                if(isMenuOpen) {
-                    gsap.to(bars[0], { rotate: 45, y: 8, duration: 0.3 });
-                    gsap.to(bars[1], { opacity: 0, duration: 0.3 });
-                    gsap.to(bars[2], { rotate: -45, y: -8, width: '32px', duration: 0.3 });
-                } else {
-                    gsap.to(bars[0], { rotate: 0, y: 0, duration: 0.3 });
-                    gsap.to(bars[1], { opacity: 1, duration: 0.3 });
-                    gsap.to(bars[2], { rotate: 0, y: 0, width: '20px', duration: 0.3 });
-                }
-            });
-
-            gsap.from(".hero-reveal", { y: 100, opacity: 0, duration: 1.5, stagger: 0.2, ease: "power4.out" });
-
-            gsap.utils.toArray('.reveal-up').forEach(el => {
-                gsap.from(el, {
-                    scrollTrigger: { trigger: el, start: "top 92%" },
-                    y: 40, opacity: 0, duration: 1.2, ease: "power3.out"
-                });
-            });
-
-            gsap.to(".parallax-pitch", {
-                scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.5 },
-                y: -150, rotateX: 35, opacity: 0.08
-            });
-
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    const href = this.getAttribute('href');
-                    if(href.startsWith('#')) {
-                        e.preventDefault();
-                        if(isMenuOpen) menuToggle.click();
-                        document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
-                    }
-                });
-            });
-        });
-    </script>
+window.openConvocs = function(eq) {
+  const ov  = document.getElementById('modal-ov');
+  const box = ov.querySelector('.modal-box');
+  document.getElementById('modal-title').textContent = 'GROUPE ' + eq;
+  document.getElementById('modal-content').innerHTML = convocs[eq].map(n => `<div class="modal-player">${n}</div>`).join('');
+  ov.classList.add('show');
+  box.style.transform='scale(.85) translateY(20px)';
+  box.style.opacity='0';
+  setTimeout(() => ov.classList.remove('show'), 350);
+};
+</script>
 </body>
+</html>tyle.cssText = 'transform:scale(.85) translateY(20px);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .35s ease;';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    box.style.transform='scale(.85) translateY(20px)';
+  box.style.opacity='0';
+  setTimeout(() => ov.classList.remove('show'), 350);
+};
+</script>
+</body>
+</html>tyle.transform='scale(1) translateY(0)';
+    box.style.transform='scale(.85) translateY(20px)';
+  box.style.opacity='0';
+  setTimeout(() => ov.classList.remove('show'), 350);
+};
+</script>
+</body>
+</html>tyle.opacity='1';
+  }));
+};
 
+window.closeModal = function() {
+  const ov  = document.getElementById('modal-ov');
+  const box = ov.querySelector('.modal-box');
+  box.style.transform='scale(.85) translateY(20px)';
+  box.style.opacity='0';
+  setTimeout(() => ov.classList.remove('show'), 350);
+};
+</script>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
