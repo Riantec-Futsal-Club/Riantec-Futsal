@@ -1148,8 +1148,18 @@ window.openConvocs = function(eq) {
   document.getElementById('modal-title').textContent = 'GROUPE ' + eq;
   document.getElementById('modal-content').innerHTML = convocs[eq].map(n => `<div class="modal-player">${n}</div>`).join('');
   ov.classList.add('show');
-  box.style.transform='scale(.85) translateY(20px)';
-  box.style.opacity='0';
+  box.style.cssText = 'transform:scale(.85) translateY(20px);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .35s ease;';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    box.style.transform = 'scale(1) translateY(0)';
+    box.style.opacity   = '1';
+  }));
+};
+
+window.closeModal = function() {
+  const ov  = document.getElementById('modal-ov');
+  const box = ov.querySelector('.modal-box');
+  box.style.transform = 'scale(.85) translateY(20px)';
+  box.style.opacity   = '0';
   setTimeout(() => ov.classList.remove('show'), 350);
 };
 </script>
