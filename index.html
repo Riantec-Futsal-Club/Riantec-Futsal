@@ -24,6 +24,10 @@
   --glass-border:rgba(255,255,255,.18);
   --glass-shine: rgba(255,255,255,.28);
   --text-muted:  rgba(200,210,240,.5);
+  --green:       #5dde8a;
+  --green-bg:    rgba(93,222,138,.12);
+  --red:         #ff6b6b;
+  --red-bg:      rgba(255,107,107,.12);
   --font-d: 'Bebas Neue', sans-serif;
   --font-b: 'DM Sans', sans-serif;
   --font-i: 'Cormorant Garamond', serif;
@@ -64,7 +68,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════
-   AMBIENT BACKGROUND — animated blobs
+   AMBIENT BACKGROUND
 ══════════════════════════════════════════════ */
 .bg-canvas {
   position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
@@ -87,7 +91,6 @@ body {
   100% { transform: translate(30px,20px) scale(1.04); }
 }
 
-/* Pitch SVG watermark */
 .pitch-wm {
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%,-50%) perspective(900px) rotateX(32deg);
@@ -96,7 +99,6 @@ body {
 }
 @keyframes pitchFloat { 0%{transform:translate(-50%,-50%) perspective(900px) rotateX(32deg)} 100%{transform:translate(-50%,-52%) perspective(900px) rotateX(28deg)} }
 
-/* Noise grain */
 .noise {
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
@@ -104,7 +106,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════
-   GLASS MIXIN CLASSES
+   GLASS EFFECTS
 ══════════════════════════════════════════════ */
 .glass {
   background: var(--glass-bg);
@@ -115,7 +117,6 @@ body {
   position: relative;
   overflow: hidden;
 }
-/* Top inner highlight line */
 .glass::before {
   content: '';
   position: absolute; top: 0; left: 10%; right: 10%;
@@ -123,7 +124,6 @@ body {
   background: linear-gradient(90deg, transparent, var(--glass-shine), transparent);
   border-radius: 50%;
 }
-/* Subtle inner bottom shadow */
 .glass::after {
   content: '';
   position: absolute; bottom: 0; left: 0; right: 0;
@@ -198,6 +198,18 @@ nav { display: flex; gap: 2rem; }
   padding: .35rem .9rem;
 }
 .nav-a.cta:hover { background: rgba(240,192,64,.28); }
+
+.nav-a.member-btn {
+  background: linear-gradient(135deg, rgba(240,192,64,.25), rgba(240,192,64,.15));
+  color: var(--gold);
+  border: 1px solid rgba(240,192,64,.4);
+  font-weight: 700;
+}
+.nav-a.member-btn:hover {
+  background: linear-gradient(135deg, rgba(240,192,64,.35), rgba(240,192,64,.25));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(240,192,64,.3);
+}
 
 .ham { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
 .ham span { display: block; width: 24px; height: 2px; background: var(--white); transition: all .3s; border-radius: 2px; }
@@ -274,7 +286,6 @@ nav { display: flex; gap: 2rem; }
 }
 .scroll-bar { width: 40px; height: 1px; background: var(--gold); }
 
-/* Large ghost text behind */
 .hero-ghost {
   position: absolute; right: -2vw; top: 50%; transform: translateY(-50%);
   font-family: var(--font-d);
@@ -336,9 +347,6 @@ nav { display: flex; gap: 2rem; }
   box-shadow: 0 24px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.2);
 }
 
-/* ══════════════════════════════════════════════
-   WIN / LOSS CARD COLORING
-══════════════════════════════════════════════ */
 .score-glass.win-card {
   border-color: rgba(50, 200, 100, .35);
   background: rgba(50, 200, 100, .06);
@@ -405,7 +413,6 @@ nav { display: flex; gap: 2rem; }
   border-radius: 30px; padding: .25rem .75rem; color: rgba(220,230,255,.8);
 }
 
-/* Boutons externes compacts (scores / calendrier) */
 .ext-btn-row {
   display: flex; gap: .6rem; flex-wrap: wrap;
   margin-top: 1.2rem;
@@ -584,8 +591,6 @@ nav { display: flex; gap: 2rem; }
 ══════════════════════════════════════════════ */
 #contact { padding: 6rem 4rem 3rem; position: relative; overflow: hidden; isolation: isolate; }
 
-
-
 .contact-inner { position: relative; z-index: 1; max-width: 900px; }
 .contact-desc {
   font-family: var(--font-i); font-size: clamp(1rem,1.8vw,1.2rem);
@@ -672,6 +677,489 @@ nav { display: flex; gap: 2rem; }
 }
 
 /* ══════════════════════════════════════════════
+   LOGIN MODAL
+══════════════════════════════════════════════ */
+#login-modal {
+  display: none;
+  position: fixed; inset: 0; z-index: 900;
+  backdrop-filter: blur(20px) saturate(1.5);
+  background: rgba(5,11,24,.75);
+  align-items: center; justify-content: center;
+  padding: 1rem;
+}
+#login-modal.show { display: flex; }
+
+.login-modal-box {
+  max-width: 420px; width: 100%;
+  padding: 2.5rem;
+  border-radius: 24px;
+  background: rgba(240,192,64,.12);
+  backdrop-filter: blur(28px) saturate(2.5);
+  border: 1px solid rgba(240,192,64,.35);
+  box-shadow: 0 24px 60px rgba(0,0,0,.7);
+  text-align: center;
+}
+
+.login-logo {
+  width: 80px; height: 80px;
+  margin: 0 auto 1.5rem;
+  filter: drop-shadow(0 0 20px var(--gold-glow));
+}
+
+.login-modal-title {
+  font-family: var(--font-d);
+  font-size: 2.5rem;
+  letter-spacing: .08em;
+  margin-bottom: .5rem;
+  color: var(--gold);
+}
+
+.login-modal-subtitle {
+  font-size: .65rem;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.form-label {
+  display: block;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: .85rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(10px);
+  color: var(--white);
+  font-family: var(--font-b);
+  font-size: .85rem;
+  transition: all .3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: rgba(255,255,255,.08);
+  box-shadow: 0 0 0 3px rgba(240,192,64,.15);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 12px;
+  border: none;
+  background: rgba(240,192,64,.85);
+  color: var(--navy);
+  font-family: var(--font-b);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .3s;
+  box-shadow: 0 4px 20px rgba(240,192,64,.3);
+  margin-top: 1.5rem;
+}
+
+.btn-primary:hover {
+  background: var(--gold-2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(240,192,64,.5);
+}
+
+.demo-users {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.demo-title {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.demo-btn {
+  display: block;
+  width: 100%;
+  padding: .7rem;
+  margin-bottom: .5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+  color: var(--white);
+  font-size: .7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .3s;
+  text-align: left;
+}
+
+.demo-btn:hover {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.2);
+  transform: translateX(4px);
+}
+
+.demo-btn .role {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ══════════════════════════════════════════════
+   MEMBER AREA (APP SECTION)
+══════════════════════════════════════════════ */
+#member-area {
+  display: none;
+  position: relative;
+  z-index: 2;
+  padding: 8rem 4rem 4rem;
+}
+
+#member-area.show {
+  display: block;
+}
+
+.member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.member-welcome {
+  font-family: var(--font-d);
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  letter-spacing: .06em;
+  color: var(--gold);
+}
+
+.member-role {
+  font-size: .75rem;
+  color: var(--text-muted);
+  margin-top: .5rem;
+}
+
+.btn-logout {
+  padding: .7rem 1.5rem;
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  color: var(--white);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.btn-logout:hover {
+  background: rgba(255,255,255,.12);
+  transform: translateY(-1px);
+}
+
+.app-tabs {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: .5rem;
+}
+
+.app-tab-btn {
+  flex-shrink: 0;
+  padding: .7rem 1.5rem;
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: var(--text-muted);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .3s;
+  white-space: nowrap;
+}
+
+.app-tab-btn:hover {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.2);
+}
+
+.app-tab-btn.active {
+  background: rgba(240,192,64,.2);
+  border-color: rgba(240,192,64,.4);
+  color: var(--gold);
+}
+
+.app-tab-content {
+  display: none;
+}
+
+.app-tab-content.active {
+  display: block;
+}
+
+/* App-specific styles */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-family: var(--font-d);
+  font-size: 2.5rem;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: .5rem;
+}
+
+.stat-label {
+  font-size: .65rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.event-card {
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.event-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.event-type {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .5rem;
+}
+
+.event-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: .4rem;
+}
+
+.event-details {
+  font-size: .75rem;
+  color: var(--text-muted);
+}
+
+.event-actions {
+  display: flex;
+  gap: .5rem;
+}
+
+.btn-small {
+  padding: .5rem 1rem;
+  border-radius: 20px;
+  border: none;
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.btn-present {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid rgba(93,222,138,.3);
+}
+
+.btn-present:hover {
+  background: rgba(93,222,138,.2);
+}
+
+.btn-absent {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1px solid rgba(255,107,107,.3);
+}
+
+.btn-absent:hover {
+  background: rgba(255,107,107,.2);
+}
+
+.training-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.training-card {
+  padding: 2rem;
+}
+
+.training-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.training-date {
+  font-family: var(--font-d);
+  font-size: 2rem;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: .3rem;
+}
+
+.training-time {
+  font-size: .75rem;
+  color: var(--text-muted);
+}
+
+.status-badge {
+  padding: .4rem .9rem;
+  border-radius: 20px;
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.status-present {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid rgba(93,222,138,.3);
+}
+
+.status-pending {
+  background: rgba(255,200,100,.12);
+  color: #FFC864;
+  border: 1px solid rgba(255,200,100,.3);
+}
+
+.training-details {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .5rem;
+  font-size: .8rem;
+}
+
+.detail-label {
+  color: var(--text-muted);
+}
+
+.detail-value {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.attendance-summary {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.attendance-stat {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.attendance-count {
+  font-family: var(--font-d);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.count-present { color: var(--green); }
+.count-absent { color: var(--red); }
+.count-pending { color: #FFC864; }
+
+.attendance-label {
+  font-size: .65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+}
+
+.training-actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.btn-view {
+  padding: .6rem 1.2rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  color: var(--white);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.btn-view:hover {
+  background: rgba(255,255,255,.12);
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════
    SCROLL REVEAL
 ══════════════════════════════════════════════ */
 .reveal {
@@ -706,14 +1194,17 @@ nav { display: flex; gap: 2rem; }
   header { top: .6rem; width: calc(100% - 2rem); padding: .85rem 1.25rem; }
   #hero { padding: 7rem 1.5rem 4rem; }
   .section { padding: 4rem 1.5rem; }
+  #member-area { padding: 6rem 1.5rem 3rem; }
   .hero-ghost { display: none; }
   .partners-grid { grid-template-columns: repeat(2, 1fr); }
   .tbl-head, .trow { grid-template-columns: 36px 1fr 50px 36px 50px; padding: .65rem 1rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 480px) {
   .partners-grid { grid-template-columns: repeat(2, 1fr); }
   .modal-list { grid-template-columns: 1fr; }
   .scores-wrap { gap: 1rem; }
+  .login-modal-box { padding: 2rem 1.5rem; }
 }
 </style>
 </head>
@@ -746,15 +1237,52 @@ nav { display: flex; gap: 2rem; }
 <div id="cur-dot"></div>
 <div id="cur-ring"></div>
 
-<!-- MODAL -->
-<div id="modal-ov" onclick="closeModal()">
+<!-- CONVOCATIONS MODAL -->
+<div id="modal-ov">
   <div class="modal-box" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeModal()">Fermer ✕</button>
     <div class="modal-title" id="modal-title">GROUPE A</div>
-    <div class="modal-list" id="modal-content"></div>
-    <div class="modal-foot">
+    <div id="modal-content"></div>
+    <div class="modal-foot" id="modal-foot" style="display:none">
       <span>Riantec Futsal</span>
       <span>Entente Rive Gauche</span>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal" onclick="closeLoginOnOverlay(event)">
+  <div class="login-modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeLogin()" style="position:absolute;top:1.2rem;right:1.2rem;background:none;border:none;cursor:pointer;font-size:1.5rem;color:var(--gold);transition:transform .3s;z-index:10;">✕</button>
+    <img src="logo erg.png" alt="ERG Logo" class="login-logo">
+    <h1 class="login-modal-title">Connexion</h1>
+    <p class="login-modal-subtitle">Espace Membre</p>
+    
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="login-email" placeholder="votre@email.com" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" class="form-input" id="login-password" placeholder="••••••••" required>
+      </div>
+      
+      <button type="submit" class="btn-primary">Se connecter</button>
+    </form>
+    
+    <div class="demo-users">
+      <div class="demo-title">Exemples de connexion</div>
+      <button type="button" class="demo-btn" onclick="quickLogin('sam.cavil@riantec.com', 'riantec2025')">
+        <span class="role">Joueur:</span> sam.cavil@riantec.com / riantec2025
+      </button>
+      <button type="button" class="demo-btn" onclick="quickLogin('guillaume.lediodic@riantec.com', 'riantec2025')">
+        <span class="role">Coach:</span> guillaume.lediodic@riantec.com / riantec2025
+      </button>
+      <button type="button" class="demo-btn" onclick="quickLogin('dorian.meilleur@riantec.com', 'riantec2025')">
+        <span class="role">Admin:</span> dorian.meilleur@riantec.com / riantec2025
+      </button>
     </div>
   </div>
 </div>
@@ -774,7 +1302,8 @@ nav { display: flex; gap: 2rem; }
     <a href="#classement"  class="nav-a">Classement</a>
     <a href="#calendrier"  class="nav-a">Calendrier</a>
     <a href="#partenaires" class="nav-a">Partenaires</a>
-    <a href="#contact"     class="nav-a cta">Contact</a>
+    <a href="#" class="nav-a cta member-btn" onclick="event.preventDefault(); openLogin()">🔐 Espace Membre</a>
+    <a href="#contact"     class="nav-a">Contact</a>
   </nav>
   <button class="ham" id="ham" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -787,7 +1316,8 @@ nav { display: flex; gap: 2rem; }
   <a href="#classement">Classement</a>
   <a href="#calendrier">Calendrier</a>
   <a href="#partenaires">Partenaires</a>
-  <a href="#contact" style="color:var(--gold)">Contact</a>
+  <a href="#" onclick="event.preventDefault(); openLogin(); closeMobileMenu();" style="color:var(--gold)">🔐 Espace Membre</a>
+  <a href="#contact">Contact</a>
 </div>
 
 <!-- ═══════ HERO ═══════ -->
@@ -825,7 +1355,6 @@ nav { display: flex; gap: 2rem; }
   <div class="scores-wrap">
 
     <div class="reveal" style="transition-delay:.05s">
-      <!-- DÉFAITE → classe loss-card sur score-glass -->
       <div class="score-glass glass loss-card">
         <div class="eq-badge a">Équipe A</div>
         <div class="score-j">
@@ -850,7 +1379,6 @@ nav { display: flex; gap: 2rem; }
     </div>
 
     <div class="reveal" style="transition-delay:.15s">
-      <!-- DÉFAITE → classe loss-card sur score-glass -->
       <div class="score-glass glass win-card">
         <div class="eq-badge b">Équipe B</div>
         <div class="score-j">
@@ -878,7 +1406,6 @@ nav { display: flex; gap: 2rem; }
 
   </div>
 
-  <!-- Boutons scores sous les deux cartes -->
   <div class="ext-btn-row reveal">
     <a href="https://www.sportcorico.com/clubs/riantec-futsal-club/riantec-rfc" target="_blank" rel="noopener" class="ext-btn">Scores Équipe A →</a>
     <a href="https://www.sportcorico.com/clubs/riantec-futsal-club/riantec-rfc-1" target="_blank" rel="noopener" class="ext-btn">Scores Équipe B →</a>
@@ -1064,6 +1591,104 @@ nav { display: flex; gap: 2rem; }
 
 <div class="divider"></div>
 
+<!-- ═══════ MEMBER AREA (APP) ═══════ -->
+<section id="member-area">
+  <div class="member-header">
+    <div>
+      <h1 class="member-welcome" id="member-welcome">Bienvenue</h1>
+      <div class="member-role" id="member-role">Espace Membre</div>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button class="btn-logout" onclick="returnToSite()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15)">← Retour au site</button>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="app-tabs">
+    <button class="app-tab-btn active" data-tab="dashboard">📊 Accueil</button>
+    <button class="app-tab-btn" data-tab="trainings">🏃 Entraînements</button>
+    <button class="app-tab-btn" data-tab="matches">⚽ Matchs</button>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div class="app-tab-content active" id="app-tab-dashboard">
+    <div class="stats-grid">
+    </div>
+
+    <h2 class="sec-title" style="font-size:2.5rem">Prochains <span class="g">événements</span></h2>
+
+    <div class="event-card glass-gold">
+      <div class="event-info">
+        <div class="event-type">⚽ Match • Équipe A</div>
+        <div class="event-title">ERG vs ESSOR</div>
+        <div class="event-details">📍 Domicile • Jeudi 26 Février 2026 • 21h00</div>
+      </div>
+      <div class="event-actions">
+        <button class="btn-small btn-present" onclick="updateAvailability('match-1', 'present')">✓ Disponible</button>
+        <button class="btn-small btn-absent" onclick="updateAvailability('match-1', 'absent')">✕ Indisponible</button>
+      </div>
+    </div>
+
+    <div class="event-card glass">
+      <div class="event-info">
+        <div class="event-details">📍 Gymnase Kerdurand • Mardi 24 Février 2026 • 20h15</div>
+      </div>
+      <div class="event-actions">
+        <button class="btn-small btn-present" onclick="updateAvailability('training-1', 'present')">✓ Présent</button>
+        <button class="btn-small btn-absent" onclick="updateAvailability('training-1', 'absent')">✕ Absent</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAININGS TAB -->
+  <div class="app-tab-content" id="app-tab-trainings">
+    <div class="training-list">
+      <div class="training-card glass">
+        <div class="training-header">
+          <div>
+            <div class="training-date">Mardi 24 Février</div>
+            <div class="training-time">20h15</div>
+          </div>
+          <span class="status-badge status-pending">En attente</span>
+        </div>
+        
+        <div class="training-details">
+          <div class="detail-row">
+            <span class="detail-label">📍 Lieu:</span>
+            <span class="detail-value">Gymnase de Kerdurand, Riantec</span>
+          </div>
+        </div>
+        
+        <div class="attendance-summary">
+          <div class="attendance-stat">
+            <div class="attendance-count count-present">0</div>
+            <div class="attendance-label">Présents</div>
+          </div>
+          <div class="attendance-stat">
+            <div class="attendance-count count-absent">0</div>
+            <div class="attendance-label">Absents</div>
+          </div>
+          <div class="attendance-stat">
+            <div class="attendance-count count-pending">13</div>
+            <div class="attendance-label">Sans réponse</div>
+          </div>
+        </div>
+        
+        <div class="training-actions">
+          <button class="btn-small btn-present" onclick="updateAvailability('training-1', 'present')">✓ Je serai présent</button>
+          <button class="btn-small btn-absent" onclick="updateAvailability('training-1', 'absent')">✕ Je serai absent</button>
+          <button class="btn-view" onclick="viewAttendanceList('training-1')">Voir la liste</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATCHES TAB -->
+  <div class="app-tab-content" id="app-tab-matches">
+    <p style="text-align:center; padding:3rem; color:var(--text-muted)">Contenu des matchs - Voir l'application complète</p>
+  </div>
+</section>
+
 <!-- ═══════ CONTACT / FOOTER ═══════ -->
 <footer id="contact">
   <div class="contact-inner">
@@ -1074,7 +1699,7 @@ nav { display: flex; gap: 2rem; }
       On est disponibles sur nos réseaux ou par email.
     </p>
     <div class="contact-links reveal">
-      <a href="/cdn-cgi/l/email-protection#304259515e44555356454443515c70575d51595c1e535f5d" class="clink email">✉ Email</a>
+      <a href="mailto:contact@riantec-futsal.com" class="clink email">✉ Email</a>
       <a href="https://www.instagram.com/riantec_futsal/" target="_blank" rel="noopener" class="clink social">Instagram</a>
       <a href="https://www.facebook.com/riantecfutsal/" target="_blank" rel="noopener" class="clink social">Facebook</a>
     </div>
@@ -1086,7 +1711,358 @@ nav { display: flex; gap: 2rem; }
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+/* ═══════════════════════════════════════════════
+   APP STATE & DATA STORAGE
+═══════════════════════════════════════════════ */
+const appState = {
+  currentUser: null,
+  isLoggedIn: false
+};
+
+const users = {
+  // COMPTES ADMINISTRATEURS ET COACHS
+  'dorian.meilleur@riantec.com': {
+    id: 'admin1',
+    name: 'Dorian MEILLEUR',
+    role: 'Administrateur',
+    team: 'Club'
+  },
+  'guillaume.lediodic@riantec.com': {
+    id: 'coach1',
+    name: 'Guillaume LE DIODIC',
+    role: 'Coach',
+    team: 'Équipe Sénior'
+  },
+  'matheo.fourmont@riantec.com': {
+    id: 'coach2',
+    name: 'Matheo FOURMONT',
+    role: 'Coach',
+    team: 'Équipe Sénior'
+  },
+  
+  // COMPTES DEMO (à supprimer si besoin)
+  'coach@riantec.com': {
+    id: 'coach_demo',
+    name: 'Coach Démo',
+    role: 'Coach',
+    team: 'Équipe Sénior'
+  },
+  'admin@riantec.com': {
+    id: 'admin_demo',
+    name: 'Admin Démo',
+    role: 'Administrateur',
+    team: 'Club'
+  },
+  
+  // JOUEURS SÉNIORS
+  'sam.cavil@riantec.com': {
+    id: 'user1',
+    name: 'Sam CAVIL',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'mikael.costa@riantec.com': {
+    id: 'user2',
+    name: 'Mikael COSTA',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'hugo.dejesusleite@riantec.com': {
+    id: 'user3',
+    name: 'Hugo DE JESUS LEITE',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'neven.debras@riantec.com': {
+    id: 'user4',
+    name: 'Neven DEBRAS',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'ewen.foussadier@riantec.com': {
+    id: 'user5',
+    name: 'Ewen FOUSSADIER',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'florian.heno@riantec.com': {
+    id: 'user6',
+    name: 'Florian HENO',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'david.lecarour@riantec.com': {
+    id: 'user7',
+    name: 'David LE CAROUR',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'thibault.lepouezard@riantec.com': {
+    id: 'user8',
+    name: 'Thibault LE POUEZARD',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'timothe.lepouezard@riantec.com': {
+    id: 'user9',
+    name: 'Timothe LE POUEZARD',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'maxime.lucas@riantec.com': {
+    id: 'user10',
+    name: 'Maxime LUCAS',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'alexis.mainguet@riantec.com': {
+    id: 'user11',
+    name: 'Alexis MAINGUET',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'axel.pedron@riantec.com': {
+    id: 'user12',
+    name: 'Axel PEDRON',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'mathis.pellissier@riantec.com': {
+    id: 'user13',
+    name: 'Mathis PELLISSIER',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'allan.renaud@riantec.com': {
+    id: 'user14',
+    name: 'Allan RENAUD',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'raphael.sivy@riantec.com': {
+    id: 'user15',
+    name: 'Raphael SIVY',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'thymeo.tehery@riantec.com': {
+    id: 'user16',
+    name: 'Thymeo TEHERY',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'thibault.uhel@riantec.com': {
+    id: 'user17',
+    name: 'Thibault UHEL',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'josselin.vernochet@riantec.com': {
+    id: 'user18',
+    name: 'Josselin VERNOCHET',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'david.yim@riantec.com': {
+    id: 'user19',
+    name: 'David YIM',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'logan.zapata@riantec.com': {
+    id: 'user20',
+    name: 'Logan ZAPATA',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  'kieran.guegan@riantec.com': {
+    id: 'user21',
+    name: 'Kieran GUEGAN',
+    role: 'Joueur',
+    team: 'Sénior'
+  },
+  
+  // JOUEURS VÉTÉRANS
+  'francois.lebigot@riantec.com': {
+    id: 'vet1',
+    name: 'Francois LE BIGOT',
+    role: 'Joueur',
+    team: 'Vétéran'
+  },
+  'jeremy.legall@riantec.com': {
+    id: 'vet2',
+    name: 'Jeremy LE GALL',
+    role: 'Joueur',
+    team: 'Vétéran'
+  },
+  'jeremy.nicole@riantec.com': {
+    id: 'vet3',
+    name: 'Jeremy NICOLE',
+    role: 'Joueur',
+    team: 'Vétéran'
+  },
+  
+  // JOUEURS U19
+  'dylan.gauter@riantec.com': {
+    id: 'u19_1',
+    name: 'Dylan GAUTER',
+    role: 'Joueur',
+    team: 'U19'
+  },
+  'nolan.olivin@riantec.com': {
+    id: 'u19_2',
+    name: 'Nolan OLIVIN',
+    role: 'Joueur',
+    team: 'U19'
+  },
+  
+  // JOUEURS U17
+  'juliann.gourden@riantec.com': {
+    id: 'u17_1',
+    name: 'Juliann GOURDEN',
+    role: 'Joueur',
+    team: 'U17'
+  },
+  'julien.olivin@riantec.com': {
+    id: 'u17_2',
+    name: 'Julien OLIVIN',
+    role: 'Joueur',
+    team: 'U17'
+  },
+  
+  // JOUEURS U20
+  'thomas.robino@riantec.com': {
+    id: 'u20_1',
+    name: 'Thomas ROBINO',
+    role: 'Joueur',
+    team: 'U20'
+  }
+};
+
+// Liste complète des joueurs Séniors pour les présences (pas de distinction A/B)
+const allPlayers = [
+  { id: 'user1', name: 'Sam CAVIL', team: 'Sénior' },
+  { id: 'user2', name: 'Mikael COSTA', team: 'Sénior' },
+  { id: 'user3', name: 'Hugo DE JESUS LEITE', team: 'Sénior' },
+  { id: 'user4', name: 'Neven DEBRAS', team: 'Sénior' },
+  { id: 'user5', name: 'Ewen FOUSSADIER', team: 'Sénior' },
+  { id: 'user6', name: 'Florian HENO', team: 'Sénior' },
+  { id: 'user7', name: 'David LE CAROUR', team: 'Sénior' },
+  { id: 'user8', name: 'Thibault LE POUEZARD', team: 'Sénior' },
+  { id: 'user9', name: 'Timothe LE POUEZARD', team: 'Sénior' },
+  { id: 'user10', name: 'Maxime LUCAS', team: 'Sénior' },
+  { id: 'user11', name: 'Alexis MAINGUET', team: 'Sénior' },
+  { id: 'user12', name: 'Axel PEDRON', team: 'Sénior' },
+  { id: 'user13', name: 'Mathis PELLISSIER', team: 'Sénior' },
+  { id: 'user14', name: 'Allan RENAUD', team: 'Sénior' },
+  { id: 'user15', name: 'Raphael SIVY', team: 'Sénior' },
+  { id: 'user16', name: 'Thymeo TEHERY', team: 'Sénior' },
+  { id: 'user17', name: 'Thibault UHEL', team: 'Sénior' },
+  { id: 'user18', name: 'Josselin VERNOCHET', team: 'Sénior' },
+  { id: 'user19', name: 'David YIM', team: 'Sénior' },
+  { id: 'user20', name: 'Logan ZAPATA', team: 'Sénior' },
+  { id: 'user21', name: 'Kieran GUEGAN', team: 'Sénior' }
+];
+
+// Structure des événements
+const events = {
+  'training-1': {
+    id: 'training-1',
+    type: 'training',
+    title: 'Séance technique - Travail de passes',
+    date: 'Lundi 17 Février',
+    time: '20h30 - 22h00',
+    location: 'Gymnase de Kerdurand, Riantec',
+    team: 'Sénior'
+  },
+  'training-2': {
+    id: 'training-2',
+    type: 'training',
+    title: 'Préparation physique',
+    date: 'Jeudi 20 Février',
+    time: '19h00 - 20h30',
+    location: 'Gymnase de Kerdurand, Riantec',
+    team: 'Sénior'
+  },
+  'match-1': {
+    id: 'match-1',
+    type: 'match',
+    title: 'ERG vs Le Sourn SP',
+    date: 'Mercredi 19 Février 2026',
+    time: '21h00',
+    location: 'Domicile - Gymnase de Kerdurand',
+    team: 'Sénior'
+  }
+};
+
+// Fonctions de stockage
+function getAttendanceData() {
+  const data = localStorage.getItem('riantec_attendance');
+  if (data) {
+    return JSON.parse(data);
+  }
+  // Données par défaut
+  return {};
+}
+
+function saveAttendanceData(data) {
+  localStorage.setItem('riantec_attendance', JSON.stringify(data));
+}
+
+function updateUserAttendance(eventId, userId, status) {
+  const data = getAttendanceData();
+  if (!data[eventId]) {
+    data[eventId] = {};
+  }
+  data[eventId][userId] = {
+    status: status,
+    timestamp: new Date().toISOString()
+  };
+  saveAttendanceData(data);
+}
+
+function getUserAttendance(eventId, userId) {
+  const data = getAttendanceData();
+  return data[eventId]?.[userId]?.status || 'pending';
+}
+
+function getEventAttendanceStats(eventId) {
+  const data = getAttendanceData();
+  const eventData = data[eventId] || {};
+  const event = events[eventId];
+  
+  // Filtrer les joueurs de l'équipe concernée
+  const teamPlayers = allPlayers.filter(p => p.team === event.team);
+  
+  let present = 0;
+  let absent = 0;
+  let pending = 0;
+  
+  const attendanceList = teamPlayers.map(player => {
+    const status = eventData[player.id]?.status || 'pending';
+    
+    if (status === 'present') present++;
+    else if (status === 'absent') absent++;
+    else pending++;
+    
+    return {
+      id: player.id,
+      name: player.name,
+      status: status
+    };
+  });
+  
+  return {
+    present,
+    absent,
+    pending,
+    list: attendanceList
+  };
+}
+
+const convocs = { A: ["À venir"], B: ["À venir"] };
+
 /* ─── CURSOR ─────────────────────────────────── */
 const dot  = document.getElementById('cur-dot');
 const ring = document.getElementById('cur-ring');
@@ -1121,9 +2097,15 @@ ham.addEventListener('click', () => {
   else { s[0].style.cssText=''; s[1].style.cssText=''; s[2].style.cssText=''; }
 });
 mob.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  if (a.getAttribute('href').startsWith('#')) {
+    closeMobileMenu();
+  }
+}));
+
+function closeMobileMenu() {
   open=false; mob.classList.remove('open');
   ham.querySelectorAll('span').forEach(s => s.style.cssText='');
-}));
+}
 
 /* ─── SMOOTH SCROLL ──────────────────────────── */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -1142,14 +2124,387 @@ window.addEventListener('scroll', () => {
   });
 }, { passive: true });
 
-/* ─── MODAL ──────────────────────────────────── */
-const convocs = { A: ["À venir"], B: ["À venir"] };
+/* ═══════════════════════════════════════════════
+   LOGIN SYSTEM
+═══════════════════════════════════════════════ */
+function openLogin() {
+  // Si l'utilisateur est déjà connecté, aller directement à l'espace membre
+  if (appState.isLoggedIn && appState.currentUser) {
+    // Hide public sections
+    document.getElementById('hero').style.display = 'none';
+    document.getElementById('scores').style.display = 'none';
+    document.getElementById('classement').style.display = 'none';
+    document.getElementById('calendrier').style.display = 'none';
+    document.getElementById('partenaires').style.display = 'none';
+    
+    // Hide all dividers
+    document.querySelectorAll('.divider').forEach(div => div.style.display = 'none');
+    
+    // Show member area
+    document.getElementById('member-area').classList.add('show');
+    
+    // Scroll to member area
+    setTimeout(() => {
+      document.getElementById('member-area').scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  } else {
+    // Sinon, afficher le modal de connexion
+    document.getElementById('login-modal').classList.add('show');
+  }
+}
 
+function closeLogin() {
+  document.getElementById('login-modal').classList.remove('show');
+}
+
+function closeLoginOnOverlay(event) {
+  if (event.target.id === 'login-modal') {
+    closeLogin();
+  }
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  
+  if (users[email] && (password === 'demo123' || password === 'riantec2025')) {
+    login(email);
+  } else {
+    alert('Email ou mot de passe incorrect');
+  }
+  return false;
+}
+
+function quickLogin(email, password) {
+  login(email);
+}
+
+function login(email) {
+  appState.currentUser = users[email];
+  appState.isLoggedIn = true;
+  
+  // Hide public sections
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('scores').style.display = 'none';
+  document.getElementById('classement').style.display = 'none';
+  document.getElementById('calendrier').style.display = 'none';
+  document.getElementById('partenaires').style.display = 'none';
+  
+  // Hide all dividers
+  document.querySelectorAll('.divider').forEach(div => div.style.display = 'none');
+  
+  // Show member area
+  document.getElementById('member-area').classList.add('show');
+  
+  // Update member welcome
+  document.getElementById('member-welcome').textContent = `Bienvenue ${appState.currentUser.name}`;
+  document.getElementById('member-role').textContent = `${appState.currentUser.role} • ${appState.currentUser.team}`;
+  
+  // Rafraîchir les données de présence
+  refreshTrainingsTab();
+  
+  // Close login modal
+  closeLogin();
+  
+  // Reset form
+  document.getElementById('login-form').reset();
+  
+  // Scroll to member area
+  setTimeout(() => {
+    document.getElementById('member-area').scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+}
+
+function logout() {
+  appState.currentUser = null;
+  appState.isLoggedIn = false;
+  
+  // Show public sections
+  document.getElementById('hero').style.display = 'flex';
+  document.getElementById('scores').style.display = 'block';
+  document.getElementById('classement').style.display = 'block';
+  document.getElementById('calendrier').style.display = 'block';
+  document.getElementById('partenaires').style.display = 'block';
+  
+  // Show dividers
+  document.querySelectorAll('.divider').forEach(div => div.style.display = 'block');
+  
+  // Hide member area
+  document.getElementById('member-area').classList.remove('show');
+  
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function returnToSite() {
+  // Garder l'utilisateur connecté mais retourner au site public
+  // Show public sections
+  document.getElementById('hero').style.display = 'flex';
+  document.getElementById('scores').style.display = 'block';
+  document.getElementById('classement').style.display = 'block';
+  document.getElementById('calendrier').style.display = 'block';
+  document.getElementById('partenaires').style.display = 'block';
+  
+  // Show dividers
+  document.querySelectorAll('.divider').forEach(div => div.style.display = 'block');
+  
+  // Hide member area
+  document.getElementById('member-area').classList.remove('show');
+  
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  // Show notification
+  showNotification('Vous restez connecté - Cliquez sur "Espace Membre" pour revenir');
+}
+
+/* ═══════════════════════════════════════════════
+   APP TABS
+═══════════════════════════════════════════════ */
+document.querySelectorAll('.app-tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tab = this.getAttribute('data-tab');
+    
+    // Update buttons
+    document.querySelectorAll('.app-tab-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    
+    // Update content
+    document.querySelectorAll('.app-tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`app-tab-${tab}`).classList.add('active');
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   APP FUNCTIONS
+═══════════════════════════════════════════════ */
+function updateAvailability(eventId, status) {
+  if (!appState.currentUser) return;
+  
+  // Enregistrer la présence
+  updateUserAttendance(eventId, appState.currentUser.id, status);
+  
+  const messages = {
+    present: '✓ Votre présence a été confirmée',
+    absent: '✕ Votre absence a été enregistrée'
+  };
+  
+  showNotification(messages[status]);
+  
+  // Rafraîchir l'affichage si on est sur l'onglet entraînements
+  if (document.getElementById('app-tab-trainings').classList.contains('active')) {
+    refreshTrainingsTab();
+  }
+}
+
+function refreshTrainingsTab() {
+  const stats1 = getEventAttendanceStats('training-1');
+  const stats2 = getEventAttendanceStats('training-2');
+  
+  // Mettre à jour les compteurs pour training-1
+  const training1 = document.querySelector('#app-tab-trainings .training-card:nth-child(1)');
+  if (training1) {
+    training1.querySelector('.count-present').textContent = stats1.present;
+    training1.querySelector('.count-absent').textContent = stats1.absent;
+    training1.querySelector('.count-pending').textContent = stats1.pending;
+    
+    // Mettre à jour le statut du joueur
+    if (appState.currentUser && appState.currentUser.role === 'Joueur') {
+      const userStatus = getUserAttendance('training-1', appState.currentUser.id);
+      const statusBadge = training1.querySelector('.status-badge');
+      statusBadge.className = 'status-badge';
+      
+      if (userStatus === 'present') {
+        statusBadge.classList.add('status-present');
+        statusBadge.textContent = 'Confirmé présent';
+        // Bouton pour modifier
+        const actions = training1.querySelector('.training-actions');
+        actions.innerHTML = `
+          <button class="btn-small btn-neutral" style="background:var(--green-bg);color:var(--green);border-color:rgba(93,222,138,.3)" disabled>✓ Présence confirmée</button>
+          <button class="btn-small" style="background:rgba(255,255,255,.06);color:var(--white);border:1px solid rgba(255,255,255,.15)" onclick="openChangeAttendance('training-1')">🔄 Modifier ma réponse</button>
+          <button class="btn-view" onclick="viewAttendanceList('training-1')">Voir la liste (${stats1.present + stats1.absent}/${stats1.present + stats1.absent + stats1.pending})</button>
+        `;
+      } else if (userStatus === 'absent') {
+        statusBadge.classList.add('status-absent');
+        statusBadge.textContent = 'Confirmé absent';
+        const actions = training1.querySelector('.training-actions');
+        actions.innerHTML = `
+          <button class="btn-small btn-neutral" style="background:var(--red-bg);color:var(--red);border-color:rgba(255,107,107,.3)" disabled>✕ Absence confirmée</button>
+          <button class="btn-small" style="background:rgba(255,255,255,.06);color:var(--white);border:1px solid rgba(255,255,255,.15)" onclick="openChangeAttendance('training-1')">🔄 Modifier ma réponse</button>
+          <button class="btn-view" onclick="viewAttendanceList('training-1')">Voir la liste (${stats1.present + stats1.absent}/${stats1.present + stats1.absent + stats1.pending})</button>
+        `;
+      } else {
+        statusBadge.classList.add('status-pending');
+        statusBadge.textContent = 'En attente de réponse';
+      }
+    } else {
+      // Pour le coach, juste le bouton voir la liste
+      const actions = training1.querySelector('.training-actions');
+      actions.innerHTML = `
+        <button class="btn-view" onclick="viewAttendanceList('training-1')">Voir la liste (${stats1.present + stats1.absent}/${stats1.present + stats1.absent + stats1.pending})</button>
+      `;
+    }
+  }
+}
+
+function openChangeAttendance(eventId) {
+  const event = events[eventId];
+  const userStatus = getUserAttendance(eventId, appState.currentUser.id);
+  
+  const modal = document.getElementById('modal-ov');
+  const title = document.getElementById('modal-title');
+  const content = document.getElementById('modal-content');
+  const box = modal.querySelector('.modal-box');
+  const footer = document.getElementById('modal-foot');
+  
+  footer.style.display = 'none';
+  
+  title.textContent = `Modifier ma réponse`;
+  
+  content.innerHTML = `
+    <div style="margin-bottom:2rem">
+      <div style="font-size:.85rem;color:var(--white);margin-bottom:.3rem;font-weight:600">${event.title}</div>
+      <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:1rem">${event.date} • ${event.time}</div>
+      
+      <div style="padding:1rem;border-radius:12px;background:rgba(255,200,100,.08);border:1px solid rgba(255,200,100,.2);margin-bottom:1.5rem">
+        <div style="font-size:.75rem;color:#FFC864;font-weight:600;margin-bottom:.3rem">Réponse actuelle :</div>
+        <div style="font-size:.85rem;color:var(--white);font-weight:700">
+          ${userStatus === 'present' ? '✓ Vous êtes marqué PRÉSENT' : '✕ Vous êtes marqué ABSENT'}
+        </div>
+      </div>
+      
+      <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:1.5rem">
+        Choisissez votre nouvelle réponse :
+      </div>
+    </div>
+    
+    <div style="display:flex;flex-direction:column;gap:.8rem">
+      <button onclick="updateAvailabilityAndClose('${eventId}', 'present')" style="width:100%;padding:1rem 1.5rem;border-radius:12px;border:2px solid rgba(93,222,138,.4);background:var(--green-bg);color:var(--green);font-family:var(--font-b);font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:.5rem">
+        <span style="font-size:1.2rem">✓</span>
+        <span>Je serai présent</span>
+      </button>
+      
+      <button onclick="updateAvailabilityAndClose('${eventId}', 'absent')" style="width:100%;padding:1rem 1.5rem;border-radius:12px;border:2px solid rgba(255,107,107,.4);background:var(--red-bg);color:var(--red);font-family:var(--font-b);font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:.5rem">
+        <span style="font-size:1.2rem">✕</span>
+        <span>Je serai absent</span>
+      </button>
+      
+      <button onclick="closeModal()" style="width:100%;padding:.8rem 1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:var(--text-muted);font-family:var(--font-b);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .3s;margin-top:.5rem">
+        Annuler
+      </button>
+    </div>
+  `;
+  
+  // Afficher le modal
+  modal.classList.add('show');
+  box.style.cssText = 'transform:scale(.85) translateY(20px);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .35s ease;';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    box.style.transform = 'scale(1) translateY(0)';
+    box.style.opacity   = '1';
+  }));
+}
+
+function updateAvailabilityAndClose(eventId, status) {
+  updateAvailability(eventId, status);
+  closeModal();
+}
+
+function viewAttendanceList(eventId) {
+  const stats = getEventAttendanceStats(eventId);
+  const event = events[eventId];
+  
+  const modal = document.getElementById('modal-ov');
+  const title = document.getElementById('modal-title');
+  const content = document.getElementById('modal-content');
+  const box = modal.querySelector('.modal-box');
+  const footer = document.getElementById('modal-foot');
+  
+  // Masquer le footer pour les listes de présence
+  footer.style.display = 'none';
+  
+  title.textContent = `Liste de présence`;
+  
+  content.innerHTML = `
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:.85rem;color:var(--white);margin-bottom:.3rem;font-weight:600">${event.title}</div>
+      <div style="font-size:.7rem;color:var(--text-muted)">${event.date} • ${event.time}</div>
+    </div>
+    
+    <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:2rem;max-height:400px;overflow-y:auto;padding-right:.5rem">
+      ${stats.list.map(player => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)">
+          <div style="font-size:.85rem;font-weight:600;color:var(--white)">${player.name}</div>
+          <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:.3rem .7rem;border-radius:15px;background:${player.status === 'present' ? 'var(--green-bg)' : player.status === 'absent' ? 'var(--red-bg)' : 'rgba(255,200,100,.12)'};color:${player.status === 'present' ? 'var(--green)' : player.status === 'absent' ? 'var(--red)' : '#FFC864'};border:1px solid ${player.status === 'present' ? 'rgba(93,222,138,.3)' : player.status === 'absent' ? 'rgba(255,107,107,.3)' : 'rgba(255,200,100,.3)'}">
+            ${player.status === 'present' ? '✓ Présent' : player.status === 'absent' ? '✕ Absent' : '⏳ En attente'}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    
+    <div style="padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.12);display:flex;gap:2rem;justify-content:center;flex-wrap:wrap">
+      <div style="text-align:center;flex:1;min-width:80px">
+        <div style="font-family:var(--font-d);font-size:2.5rem;color:var(--green);line-height:1">${stats.present}</div>
+        <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.5rem;font-weight:600">Présents</div>
+      </div>
+      <div style="text-align:center;flex:1;min-width:80px">
+        <div style="font-family:var(--font-d);font-size:2.5rem;color:var(--red);line-height:1">${stats.absent}</div>
+        <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.5rem;font-weight:600">Absents</div>
+      </div>
+      <div style="text-align:center;flex:1;min-width:80px">
+        <div style="font-family:var(--font-d);font-size:2.5rem;color:#FFC864;line-height:1">${stats.pending}</div>
+        <div style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.5rem;font-weight:600">En attente</div>
+      </div>
+    </div>
+  `;
+  
+  // Afficher le modal avec animation
+  modal.classList.add('show');
+  box.style.cssText = 'transform:scale(.85) translateY(20px);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .35s ease;';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    box.style.transform = 'scale(1) translateY(0)';
+    box.style.opacity   = '1';
+  }));
+}
+
+function showNotification(message) {
+  const notif = document.createElement('div');
+  notif.textContent = message;
+  notif.style.cssText = `
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 2000;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    background: rgba(240,192,64,.9);
+    color: var(--navy);
+    font-weight: 700;
+    font-size: .85rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    animation: slideIn 0.3s ease;
+  `;
+  
+  document.body.appendChild(notif);
+  
+  setTimeout(() => {
+    notif.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => notif.remove(), 300);
+  }, 3000);
+}
+
+/* ─── MODAL (CONVOCATIONS & ATTENDANCE) ───────────────────── */
 window.openConvocs = function(eq) {
   const ov  = document.getElementById('modal-ov');
   const box = ov.querySelector('.modal-box');
+  const footer = document.getElementById('modal-foot');
+  
   document.getElementById('modal-title').textContent = 'GROUPE ' + eq;
-  document.getElementById('modal-content').innerHTML = convocs[eq].map(n => `<div class="modal-player">${n}</div>`).join('');
+  document.getElementById('modal-content').innerHTML = '<div class="modal-list">' + convocs[eq].map(n => `<div class="modal-player">${n}</div>`).join('') + '</div>';
+  
+  // Afficher le footer pour les convocations
+  footer.style.display = 'flex';
+  
   ov.classList.add('show');
   box.style.cssText = 'transform:scale(.85) translateY(20px);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .35s ease;';
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -1165,9 +2520,35 @@ window.closeModal = function() {
   box.style.opacity   = '0';
   setTimeout(() => ov.classList.remove('show'), 350);
 };
+
+// Fermer au clic sur l'overlay
+document.addEventListener('DOMContentLoaded', function() {
+  const modalOv = document.getElementById('modal-ov');
+  if (modalOv) {
+    modalOv.addEventListener('click', function(e) {
+      if (e.target.id === 'modal-ov') {
+        closeModal();
+      }
+    });
+  }
+});
+
+/* ═══════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════ */
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(400px); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
 </script>
+
 </body>
 </html>
-
-
-
