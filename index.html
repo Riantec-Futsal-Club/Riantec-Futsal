@@ -1301,19 +1301,6 @@ nav { display: flex; gap: 2rem; }
       
       <button type="submit" class="btn-primary">Se connecter</button>
     </form>
-    
-    <div class="demo-users">
-      <div class="demo-title">Exemples de connexion</div>
-      <button type="button" class="demo-btn" onclick="quickLogin('sam.cavil@riantec.com', 'riantec2025')">
-        <span class="role">Joueur:</span> sam.cavil@riantec.com / riantec2025
-      </button>
-      <button type="button" class="demo-btn" onclick="quickLogin('guillaume.lediodic@riantec.com', 'riantec2025')">
-        <span class="role">Coach:</span> guillaume.lediodic@riantec.com / riantec2025
-      </button>
-      <button type="button" class="demo-btn" onclick="quickLogin('dorian.meilleur@riantec.com', 'riantec2025')">
-        <span class="role">Joueur/Admin:</span> dorian.meilleur@riantec.com / riantec2025
-      </button>
-    </div>
   </div>
 </div>
 
@@ -1642,25 +1629,6 @@ nav { display: flex; gap: 2rem; }
 
   <!-- DASHBOARD TAB -->
   <div class="app-tab-content active" id="app-tab-dashboard">
-    <div class="stats-grid">
-      <div class="stat-card glass">
-        <div class="stat-value">12</div>
-        <div class="stat-label">Entraînements</div>
-      </div>
-      <div class="stat-card glass">
-        <div class="stat-value">8</div>
-        <div class="stat-label">Matchs joués</div>
-      </div>
-      <div class="stat-card glass">
-        <div class="stat-value">85%</div>
-        <div class="stat-label">Taux présence</div>
-      </div>
-      <div class="stat-card glass">
-        <div class="stat-value">23</div>
-        <div class="stat-label">Messages</div>
-      </div>
-    </div>
-
     <h2 class="sec-title" style="font-size:2.5rem">Prochains <span class="g">événements</span></h2>
 
     <div class="event-card glass-gold">
@@ -2055,20 +2023,6 @@ const users = {
     name: 'Matheo FOURMONT',
     role: 'Coach',
     team: 'Équipe Sénior'
-  },
-  
-  // COMPTES DEMO (à supprimer si besoin)
-  'coach@riantec.com': {
-    id: 'coach_demo',
-    name: 'Coach Démo',
-    role: 'Coach',
-    team: 'Équipe Sénior'
-  },
-  'admin@riantec.com': {
-    id: 'admin_demo',
-    name: 'Admin Démo',
-    role: 'Administrateur',
-    team: 'Club'
   },
   
   // JOUEURS SÉNIORS
@@ -2519,9 +2473,15 @@ function handleLogin(event) {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
   
-  if (users[email] && (password === 'demo123' || password === 'riantec2025')) {
+  console.log('Login attempt:', email);
+  console.log('User exists:', !!users[email]);
+  console.log('Password correct:', password === 'riantec2025');
+  
+  if (users[email] && password === 'riantec2025') {
+    console.log('Login successful!');
     login(email);
   } else {
+    console.log('Login failed');
     alert('Email ou mot de passe incorrect');
   }
   return false;
