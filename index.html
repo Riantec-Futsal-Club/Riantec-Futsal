@@ -522,29 +522,6 @@ nav { display: flex; gap: 2rem; }
 .cal-info { font-size: .67rem; font-weight: 400; color: var(--text-muted); letter-spacing: .04em; }
 .cal-info b { color: var(--white); font-weight: 700; }
 
-.convoc-btn {
-  width: 100%; padding: .95rem 1.5rem; border: none; border-radius: 12px;
-  font-family: var(--font-b); font-size: .65rem; font-weight: 700; letter-spacing: .18em;
-  text-transform: uppercase; cursor: pointer; transition: all .3s;
-  position: relative; overflow: hidden;
-}
-.convoc-btn::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,.12), transparent);
-  pointer-events: none;
-}
-.convoc-btn.a {
-  background: rgba(240,192,64,.85); color: var(--navy);
-  box-shadow: 0 4px 20px rgba(240,192,64,.3);
-}
-.convoc-btn.a:hover { background: rgba(240,192,64,1); box-shadow: 0 8px 30px rgba(240,192,64,.5); transform: translateY(-1px); }
-.convoc-btn.b {
-  background: rgba(255,255,255,.07); color: var(--white);
-  border: 1px solid rgba(255,255,255,.15);
-  backdrop-filter: blur(10px);
-}
-.convoc-btn.b:hover { background: rgba(255,255,255,.13); }
-
 /* ══════════════════════════════════════════════
    PARTENAIRES
 ══════════════════════════════════════════════ */
@@ -1556,8 +1533,7 @@ nav { display: flex; gap: 2rem; }
           <div class="cal-info">⏰ Coup d'envoi : <b>21h00</b></div>
           <div class="cal-info">🏆 District 1 · <b>Journée 13</b></div>
         </div>
-        <button class="convoc-btn a" onclick="openConvocs('A')">Voir les convocations</button>
-        <div class="ext-btn-row" style="margin-top:.75rem">
+        <div class="ext-btn-row" style="margin-top:1.5rem">
           <a href="https://www.sportcorico.com/clubs/riantec-futsal-club/riantec-rfc" target="_blank" rel="noopener" class="ext-btn">Calendrier Équipe A →</a>
         </div>
       </div>
@@ -1574,8 +1550,7 @@ nav { display: flex; gap: 2rem; }
           <div class="cal-info">⏰ Coup d'envoi : <b>20h30</b></div>
           <div class="cal-info">🏆 District 1 · <b>Journée 13</b></div>
         </div>
-        <button class="convoc-btn b" onclick="openConvocs('B')">Voir les convocations</button>
-        <div class="ext-btn-row" style="margin-top:.75rem">
+        <div class="ext-btn-row" style="margin-top:1.5rem">
           <a href="https://www.sportcorico.com/clubs/riantec-futsal-club/riantec-rfc-1" target="_blank" rel="noopener" class="ext-btn">Calendrier Équipe B →</a>
         </div>
       </div>
@@ -3148,8 +3123,6 @@ function saveConvocations(matchId) {
   showNotification('✅ Convocations sauvegardées');
 }
 
-const convocs = { A: ["À venir"], B: ["À venir"] };
-
 /* ─── CURSOR ─────────────────────────────────── */
 const dot  = document.getElementById('cur-dot');
 const ring = document.getElementById('cur-ring');
@@ -3739,26 +3712,7 @@ function showNotification(message) {
   }, 3000);
 }
 
-/* ─── MODAL (CONVOCATIONS & ATTENDANCE) ───────────────────── */
-window.openConvocs = function(eq) {
-  const ov  = document.getElementById('modal-ov');
-  const box = ov.querySelector('.modal-box');
-  const footer = document.getElementById('modal-foot');
-  
-  document.getElementById('modal-title').textContent = 'GROUPE ' + eq;
-  document.getElementById('modal-content').innerHTML = '<div class="modal-list">' + convocs[eq].map(n => `<div class="modal-player">${n}</div>`).join('') + '</div>';
-  
-  // Afficher le footer pour les convocations
-  footer.style.display = 'flex';
-  
-  ov.classList.add('show');
-  box.style.cssText = 'transform:scale(.85) translateY(20px);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .35s ease;';
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    box.style.transform = 'scale(1) translateY(0)';
-    box.style.opacity   = '1';
-  }));
-};
-
+/* ─── MODAL (ATTENDANCE) ───────────────────── */
 window.closeModal = function() {
   const ov  = document.getElementById('modal-ov');
   const box = ov.querySelector('.modal-box');
