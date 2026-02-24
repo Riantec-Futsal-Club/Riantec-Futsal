@@ -8,6 +8,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=Cormorant+Garamond:ital,wght@1,300;1,600&display=swap" rel="stylesheet">
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+  import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyDPS8UFs0C-S-6VcEx8bDEGwki_CkE5ZV4",
+    authDomain: "riantecfutsal-72aa3.firebaseapp.com",
+    projectId: "riantecfutsal-72aa3",
+    storageBucket: "riantecfutsal-72aa3.firebasestorage.app",
+    messagingSenderId: "917393668153",
+    appId: "1:917393668153:web:c62e47a6c0517f58fd35e8"
+  };
+  
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  // Rendre disponibles globalement
+  window.firebaseDB = db;
+  window.firebaseDoc = doc;
+  window.firebaseSetDoc = setDoc;
+  window.firebaseGetDoc = getDoc;
+  window.firebaseCollection = collection;
+  window.firebaseOnSnapshot = onSnapshot;
+</script>
+
 <style>
 /* ══════════════════════════════════════════════
    BASE & VARIABLES
@@ -2954,26 +2980,35 @@ function getDashboardEvents() {
   return eventList;
 }
 
-// Fonctions de stockage local (simulation pour démo)
+// Fonctions de stockage Firebase Firestore
 async function getAttendanceData() {
   try {
-    const data = localStorage.getItem('riantec_attendance');
-    if (data) {
-      return JSON.parse(data);
+    const docRef = window.firebaseDoc(window.firebaseDB, "riantec", "attendance");
+    const docSnap = await window.firebaseGetDoc(docRef);
+    
+    if (docSnap.exists()) {
+      console.log('📥 Données chargées depuis Firebase:', docSnap.data());
+      return docSnap.data().events || {};
+    } else {
+      console.log('📭 Aucune donnée dans Firebase, retour {}');
+      return {};
     }
   } catch (error) {
-    console.error('Erreur lecture attendance:', error);
+    console.error('❌ Erreur lecture Firebase:', error);
+    return {};
   }
-  return {};
 }
 
 async function saveAttendanceData(data) {
   try {
-    localStorage.setItem('riantec_attendance', JSON.stringify(data));
-    // Déclencher un événement pour notifier les autres onglets
-    localStorage.setItem('riantec_attendance_update', Date.now().toString());
+    const docRef = window.firebaseDoc(window.firebaseDB, "riantec", "attendance");
+    await window.firebaseSetDoc(docRef, { 
+      events: data,
+      lastUpdate: new Date().toISOString()
+    });
+    console.log('💾 Données sauvegardées dans Firebase');
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde:', error);
+    console.error('❌ Erreur sauvegarde Firebase:', error);
   }
 }
 
@@ -3034,7 +3069,7 @@ async function getEventAttendanceStats(eventId) {
   };
 }
 
-// Système de convocations par match (localStorage)
+// Système de convocations par match (Firebase)
 let convocations = {
   'match-1': [],
   'match-2': []
@@ -3042,26 +3077,33 @@ let convocations = {
 
 async function saveConvocationsToStorage() {
   try {
-    localStorage.setItem('riantec_convocations', JSON.stringify(convocations));
-    localStorage.setItem('riantec_convocations_update', Date.now().toString());
+    const docRef = window.firebaseDoc(window.firebaseDB, "riantec", "convocations");
+    await window.firebaseSetDoc(docRef, {
+      matches: convocations,
+      lastUpdate: new Date().toISOString()
+    });
+    console.log('💾 Convocations sauvegardées dans Firebase');
   } catch (error) {
-    console.error('Erreur sauvegarde convocations:', error);
+    console.error('❌ Erreur sauvegarde convocations:', error);
   }
 }
 
 async function loadConvocationsFromStorage() {
   try {
-    const saved = localStorage.getItem('riantec_convocations');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      Object.keys(parsed).forEach(key => {
+    const docRef = window.firebaseDoc(window.firebaseDB, "riantec", "convocations");
+    const docSnap = await window.firebaseGetDoc(docRef);
+    
+    if (docSnap.exists()) {
+      const saved = docSnap.data().matches;
+      Object.keys(saved).forEach(key => {
         if (convocations[key]) {
-          convocations[key] = parsed[key];
+          convocations[key] = saved[key];
         }
       });
+      console.log('📥 Convocations chargées depuis Firebase');
     }
   } catch (e) {
-    console.error('Erreur chargement convocations:', e);
+    console.error('❌ Erreur chargement convocations:', e);
   }
 }
 
@@ -3290,10 +3332,11 @@ async function login(email) {
   document.getElementById('member-welcome').textContent = `Bienvenue ${appState.currentUser.name}`;
   document.getElementById('member-role').textContent = `${appState.currentUser.role} • ${appState.currentUser.team}`;
   
-  // Charger les données depuis le stockage partagé
+  // Charger les données depuis Firebase
   await loadConvocationsFromStorage();
-  lastAttendanceData = await getAttendanceData();
-  lastConvocationsData = JSON.stringify(convocations);
+  
+  // Configurer les listeners Firebase pour les mises à jour en temps réel
+  setupFirebaseListeners();
   
   // Rafraîchir les données de présence pour tous les onglets
   setTimeout(async () => {
@@ -3315,6 +3358,9 @@ async function login(email) {
 }
 
 function logout() {
+  // Désactiver les listeners Firebase
+  removeFirebaseListeners();
+  
   appState.currentUser = null;
   appState.isLoggedIn = false;
   
@@ -3772,66 +3818,78 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 /* ═══════════════════════════════════════════════
-   AUTO-REFRESH SYSTEM (actualisation automatique)
+   FIREBASE REALTIME LISTENERS (synchronisation temps réel)
 ═══════════════════════════════════════════════ */
-let lastAttendanceData = null;
-let lastConvocationsData = null;
+let attendanceUnsubscribe = null;
+let convocationsUnsubscribe = null;
 
-// Écouter les changements de localStorage (synchronisation entre onglets)
-window.addEventListener('storage', async function(e) {
-  if (e.key === 'riantec_attendance_update' && appState.isLoggedIn) {
-    await refreshTrainingsTab();
-    await refreshMatchesTab();
-    await refreshDashboard();
-  }
-  if (e.key === 'riantec_convocations_update' && appState.isLoggedIn) {
-    await loadConvocationsFromStorage();
-    const matchesTab = document.getElementById('app-tab-matches');
-    if (matchesTab && matchesTab.classList.contains('active')) {
-      await renderConvocationsList('match-1');
-      await renderConvocationsList('match-2');
-    }
-  }
-});
-
-async function checkForUpdates() {
+function setupFirebaseListeners() {
   if (!appState.isLoggedIn) return;
   
-  try {
-    // Vérifier les mises à jour des présences
-    const currentAttendanceData = await getAttendanceData();
-    const attendanceChanged = JSON.stringify(currentAttendanceData) !== JSON.stringify(lastAttendanceData);
-    
-    if (attendanceChanged && lastAttendanceData !== null) {
-      // Les données ont changé, rafraîchir l'interface
+  console.log('🔥 Configuration des listeners Firebase...');
+  
+  // Listener pour les présences
+  const attendanceRef = window.firebaseDoc(window.firebaseDB, "riantec", "attendance");
+  attendanceUnsubscribe = window.firebaseOnSnapshot(attendanceRef, async (doc) => {
+    if (doc.exists()) {
+      console.log('🔔 Mise à jour des présences détectée !');
       await refreshTrainingsTab();
       await refreshMatchesTab();
       await refreshDashboard();
     }
-    lastAttendanceData = currentAttendanceData;
-    
-    // Vérifier les mises à jour des convocations
-    await loadConvocationsFromStorage();
-    const currentConvocationsData = JSON.stringify(convocations);
-    const convocationsChanged = currentConvocationsData !== lastConvocationsData;
-    
-    if (convocationsChanged && lastConvocationsData !== null) {
-      // Rafraîchir les listes de convocations si on est sur l'onglet matchs
+  });
+  
+  // Listener pour les convocations
+  const convocationsRef = window.firebaseDoc(window.firebaseDB, "riantec", "convocations");
+  convocationsUnsubscribe = window.firebaseOnSnapshot(convocationsRef, async (doc) => {
+    if (doc.exists()) {
+      console.log('🔔 Mise à jour des convocations détectée !');
+      await loadConvocationsFromStorage();
       const matchesTab = document.getElementById('app-tab-matches');
       if (matchesTab && matchesTab.classList.contains('active')) {
         await renderConvocationsList('match-1');
         await renderConvocationsList('match-2');
       }
     }
-    lastConvocationsData = currentConvocationsData;
-    
+  });
+  
+  console.log('✅ Listeners Firebase configurés !');
+}
+
+function removeFirebaseListeners() {
+  if (attendanceUnsubscribe) {
+    attendanceUnsubscribe();
+    attendanceUnsubscribe = null;
+  }
+  if (convocationsUnsubscribe) {
+    convocationsUnsubscribe();
+    convocationsUnsubscribe = null;
+  }
+  console.log('🔇 Listeners Firebase désactivés');
+}
+
+/* ═══════════════════════════════════════════════
+   AUTO-REFRESH SYSTEM (actualisation automatique)
+═══════════════════════════════════════════════ */
+// Note: Firebase gère la synchronisation en temps réel via les listeners
+// Ce système de polling est maintenant un backup au cas où les listeners échouent
+
+async function checkForUpdatesBackup() {
+  if (!appState.isLoggedIn) return;
+  
+  try {
+    // Vérification périodique de backup (toutes les 10 secondes)
+    console.log('🔄 Vérification backup...');
+    await refreshTrainingsTab();
+    await refreshMatchesTab();
+    await refreshDashboard();
   } catch (error) {
-    console.error('Erreur lors de la vérification des mises à jour:', error);
+    console.error('Erreur lors de la vérification backup:', error);
   }
 }
 
-// Vérifier les mises à jour toutes les 3 secondes
-setInterval(checkForUpdates, 3000);
+// Backup: vérifier toutes les 10 secondes (Firebase devrait être instantané)
+setInterval(checkForUpdatesBackup, 10000);
 
 /* ═══════════════════════════════════════════════
    ANIMATIONS
