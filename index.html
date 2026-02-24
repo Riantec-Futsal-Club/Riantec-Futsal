@@ -2954,22 +2954,31 @@ function getDashboardEvents() {
   return eventList;
 }
 
-// Fonctions de stockage
-function getAttendanceData() {
-  const data = localStorage.getItem('riantec_attendance');
-  if (data) {
-    return JSON.parse(data);
+// Fonctions de stockage local (simulation pour démo)
+async function getAttendanceData() {
+  try {
+    const data = localStorage.getItem('riantec_attendance');
+    if (data) {
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Erreur lecture attendance:', error);
   }
-  // Données par défaut
   return {};
 }
 
-function saveAttendanceData(data) {
-  localStorage.setItem('riantec_attendance', JSON.stringify(data));
+async function saveAttendanceData(data) {
+  try {
+    localStorage.setItem('riantec_attendance', JSON.stringify(data));
+    // Déclencher un événement pour notifier les autres onglets
+    localStorage.setItem('riantec_attendance_update', Date.now().toString());
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde:', error);
+  }
 }
 
-function updateUserAttendance(eventId, userId, status) {
-  const data = getAttendanceData();
+async function updateUserAttendance(eventId, userId, status) {
+  const data = await getAttendanceData();
   if (!data[eventId]) {
     data[eventId] = {};
   }
@@ -2977,21 +2986,25 @@ function updateUserAttendance(eventId, userId, status) {
     status: status,
     timestamp: new Date().toISOString()
   };
-  saveAttendanceData(data);
+  await saveAttendanceData(data);
 }
 
-function getUserAttendance(eventId, userId) {
-  const data = getAttendanceData();
+async function getUserAttendance(eventId, userId) {
+  const data = await getAttendanceData();
   return data[eventId]?.[userId]?.status || 'pending';
 }
 
-function getEventAttendanceStats(eventId) {
-  const data = getAttendanceData();
+async function getEventAttendanceStats(eventId) {
+  const data = await getAttendanceData();
   const eventData = data[eventId] || {};
   const event = events[eventId];
   
+  console.log(`📊 Stats pour ${eventId}:`, { eventData, event });
+  
   // Filtrer les joueurs de l'équipe concernée
   const teamPlayers = allPlayers.filter(p => p.team === event.team);
+  
+  console.log(`👥 Joueurs de l'équipe ${event.team}:`, teamPlayers.length);
   
   let present = 0;
   let absent = 0;
@@ -3011,6 +3024,8 @@ function getEventAttendanceStats(eventId) {
     };
   });
   
+  console.log(`📈 Résultat: Présents=${present}, Absents=${absent}, En attente=${pending}`);
+  
   return {
     present,
     absent,
@@ -3019,33 +3034,38 @@ function getEventAttendanceStats(eventId) {
   };
 }
 
-// Système de convocations par match
-const convocations = {
+// Système de convocations par match (localStorage)
+let convocations = {
   'match-1': [],
   'match-2': []
 };
 
-function saveConvocationsToStorage() {
-  localStorage.setItem('convocations', JSON.stringify(convocations));
+async function saveConvocationsToStorage() {
+  try {
+    localStorage.setItem('riantec_convocations', JSON.stringify(convocations));
+    localStorage.setItem('riantec_convocations_update', Date.now().toString());
+  } catch (error) {
+    console.error('Erreur sauvegarde convocations:', error);
+  }
 }
 
-function loadConvocationsFromStorage() {
-  const saved = localStorage.getItem('convocations');
-  if (saved) {
-    try {
+async function loadConvocationsFromStorage() {
+  try {
+    const saved = localStorage.getItem('riantec_convocations');
+    if (saved) {
       const parsed = JSON.parse(saved);
       Object.keys(parsed).forEach(key => {
         if (convocations[key]) {
           convocations[key] = parsed[key];
         }
       });
-    } catch (e) {
-      console.error('Erreur chargement convocations:', e);
     }
+  } catch (e) {
+    console.error('Erreur chargement convocations:', e);
   }
 }
 
-function renderConvocationsList(matchId) {
+async function renderConvocationsList(matchId) {
   const container = document.getElementById(`convoc-list-${matchId}`);
   const actionsContainer = document.getElementById(`convoc-actions-${matchId}`);
   if (!container) return;
@@ -3060,7 +3080,7 @@ function renderConvocationsList(matchId) {
   
   let stats, availablePlayers;
   try {
-    stats = getEventAttendanceStats(matchId);
+    stats = await getEventAttendanceStats(matchId);
     availablePlayers = stats.list.filter(p => p.status === 'present');
   } catch (error) {
     return;
@@ -3094,7 +3114,7 @@ function renderConvocationsList(matchId) {
   if (actionsContainer && isCoach) actionsContainer.style.display = 'flex';
 }
 
-function toggleConvocation(matchId, playerName) {
+async function toggleConvocation(matchId, playerName) {
   try {
     const currentUser = appState.currentUser;
     const isCoach = currentUser && (currentUser.role === 'Coach' || currentUser.role === 'Président');
@@ -3104,6 +3124,9 @@ function toggleConvocation(matchId, playerName) {
       return;
     }
     
+    // Recharger les convocations depuis le stockage partagé
+    await loadConvocationsFromStorage();
+    
     const index = convocations[matchId].indexOf(playerName);
     if (index === -1) {
       convocations[matchId].push(playerName);
@@ -3111,15 +3134,15 @@ function toggleConvocation(matchId, playerName) {
       convocations[matchId].splice(index, 1);
     }
     
-    saveConvocationsToStorage();
-    renderConvocationsList(matchId);
+    await saveConvocationsToStorage();
+    await renderConvocationsList(matchId);
   } catch (error) {
     console.error('Erreur:', error);
   }
 }
 
-function saveConvocations(matchId) {
-  saveConvocationsToStorage();
+async function saveConvocations(matchId) {
+  await saveConvocationsToStorage();
   showNotification('✅ Convocations sauvegardées');
 }
 
@@ -3223,7 +3246,7 @@ function closeLoginOnOverlay(event) {
   }
 }
 
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
@@ -3234,7 +3257,7 @@ function handleLogin(event) {
   
   if (users[email] && password === 'riantec2025') {
     console.log('Login successful!');
-    login(email);
+    await login(email);
   } else {
     console.log('Login failed');
     alert('Email ou mot de passe incorrect');
@@ -3242,11 +3265,11 @@ function handleLogin(event) {
   return false;
 }
 
-function quickLogin(email, password) {
-  login(email);
+async function quickLogin(email, password) {
+  await login(email);
 }
 
-function login(email) {
+async function login(email) {
   appState.currentUser = users[email];
   appState.isLoggedIn = true;
   
@@ -3267,11 +3290,16 @@ function login(email) {
   document.getElementById('member-welcome').textContent = `Bienvenue ${appState.currentUser.name}`;
   document.getElementById('member-role').textContent = `${appState.currentUser.role} • ${appState.currentUser.team}`;
   
+  // Charger les données depuis le stockage partagé
+  await loadConvocationsFromStorage();
+  lastAttendanceData = await getAttendanceData();
+  lastConvocationsData = JSON.stringify(convocations);
+  
   // Rafraîchir les données de présence pour tous les onglets
-  setTimeout(() => {
-    refreshTrainingsTab();
-    refreshMatchesTab();
-    refreshDashboard();
+  setTimeout(async () => {
+    await refreshTrainingsTab();
+    await refreshMatchesTab();
+    await refreshDashboard();
   }, 100);
   
   // Close login modal
@@ -3346,10 +3374,11 @@ document.querySelectorAll('.app-tab-btn').forEach(btn => {
     
     // Charger convocations si onglet matchs
     if (tab === 'matches' && appState.isLoggedIn) {
-      setTimeout(() => {
+      setTimeout(async () => {
         try {
-          renderConvocationsList('match-1');
-          renderConvocationsList('match-2');
+          await loadConvocationsFromStorage();
+          await renderConvocationsList('match-1');
+          await renderConvocationsList('match-2');
         } catch (e) {}
       }, 100);
     }
@@ -3359,11 +3388,17 @@ document.querySelectorAll('.app-tab-btn').forEach(btn => {
 /* ═══════════════════════════════════════════════
    APP FUNCTIONS
 ═══════════════════════════════════════════════ */
-function updateAvailability(eventId, status) {
+async function updateAvailability(eventId, status) {
   if (!appState.currentUser) return;
   
+  console.log('📝 Enregistrement vote:', { eventId, userId: appState.currentUser.id, status });
+  
   // Enregistrer la présence
-  updateUserAttendance(eventId, appState.currentUser.id, status);
+  await updateUserAttendance(eventId, appState.currentUser.id, status);
+  
+  console.log('✅ Vote enregistré, vérification...');
+  const savedStatus = await getUserAttendance(eventId, appState.currentUser.id);
+  console.log('🔍 Statut sauvegardé:', savedStatus);
   
   const messages = {
     present: '✓ Votre présence a été confirmée',
@@ -3373,22 +3408,23 @@ function updateAvailability(eventId, status) {
   showNotification(messages[status]);
   
   // Rafraîchir TOUS les onglets pour que les données soient à jour partout
-  refreshTrainingsTab();
-  refreshMatchesTab();
-  refreshDashboard();
+  await refreshTrainingsTab();
+  await refreshMatchesTab();
+  await refreshDashboard();
 }
 
-function refreshTrainingsTab() {
+async function refreshTrainingsTab() {
   // Vérifier si l'onglet trainings existe
   const trainingsTab = document.getElementById('app-tab-trainings');
   if (!trainingsTab) return;
   
   // Rafraîchir tous les 4 entraînements
-  ['training-1', 'training-2', 'training-3', 'training-4'].forEach((trainingId, index) => {
-    const stats = getEventAttendanceStats(trainingId);
+  for (let index = 0; index < 4; index++) {
+    const trainingId = `training-${index + 1}`;
+    const stats = await getEventAttendanceStats(trainingId);
     const trainingCard = trainingsTab.querySelector(`.training-card:nth-child(${index + 1})`);
     
-    if (!trainingCard) return;
+    if (!trainingCard) continue;
     
     const presentElem = trainingCard.querySelector('.count-present');
     const absentElem = trainingCard.querySelector('.count-absent');
@@ -3400,9 +3436,9 @@ function refreshTrainingsTab() {
     
     // Mettre à jour le statut du joueur
     if (appState.currentUser && appState.currentUser.role === 'Joueur' || appState.currentUser.role === 'Joueur/Admin') {
-      const userStatus = getUserAttendance(trainingId, appState.currentUser.id);
+      const userStatus = await getUserAttendance(trainingId, appState.currentUser.id);
       const statusBadge = trainingCard.querySelector('.status-badge');
-      if (!statusBadge) return;
+      if (!statusBadge) continue;
       
       statusBadge.className = 'status-badge';
       
@@ -3441,20 +3477,21 @@ function refreshTrainingsTab() {
         `;
       }
     }
-  });
+  }
 }
 
-function refreshMatchesTab() {
+async function refreshMatchesTab() {
   // Vérifier si l'onglet matches existe
   const matchesTab = document.getElementById('app-tab-matches');
   if (!matchesTab) return;
   
   // Rafraîchir les 2 matchs
-  ['match-1', 'match-2'].forEach((matchId, index) => {
-    const stats = getEventAttendanceStats(matchId);
+  for (let index = 0; index < 2; index++) {
+    const matchId = `match-${index + 1}`;
+    const stats = await getEventAttendanceStats(matchId);
     const matchCard = matchesTab.querySelector(`.training-card:nth-child(${index + 1})`);
     
-    if (!matchCard) return;
+    if (!matchCard) continue;
     
     const presentElem = matchCard.querySelector('.count-present');
     const absentElem = matchCard.querySelector('.count-absent');
@@ -3466,9 +3503,9 @@ function refreshMatchesTab() {
     
     // Mettre à jour le statut du joueur
     if (appState.currentUser && appState.currentUser.role === 'Joueur' || appState.currentUser.role === 'Joueur/Admin') {
-      const userStatus = getUserAttendance(matchId, appState.currentUser.id);
+      const userStatus = await getUserAttendance(matchId, appState.currentUser.id);
       const statusBadge = matchCard.querySelector('.status-badge');
-      if (!statusBadge) return;
+      if (!statusBadge) continue;
       
       statusBadge.className = 'status-badge';
       
@@ -3507,10 +3544,10 @@ function refreshMatchesTab() {
         `;
       }
     }
-  });
+  }
 }
 
-function refreshDashboard() {
+async function refreshDashboard() {
   const dashboardTab = document.getElementById('app-tab-dashboard');
   if (!dashboardTab) return;
   
@@ -3563,9 +3600,9 @@ function refreshDashboard() {
   }
 }
 
-function openChangeAttendance(eventId) {
+async function openChangeAttendance(eventId) {
   const event = events[eventId];
-  const userStatus = getUserAttendance(eventId, appState.currentUser.id);
+  const userStatus = await getUserAttendance(eventId, appState.currentUser.id);
   
   const modal = document.getElementById('modal-ov');
   const title = document.getElementById('modal-title');
@@ -3625,8 +3662,8 @@ function updateAvailabilityAndClose(eventId, status) {
   closeModal();
 }
 
-function viewAttendanceList(eventId) {
-  const stats = getEventAttendanceStats(eventId);
+async function viewAttendanceList(eventId) {
+  const stats = await getEventAttendanceStats(eventId);
   const event = events[eventId];
   
   const modal = document.getElementById('modal-ov');
@@ -3722,7 +3759,7 @@ window.closeModal = function() {
 };
 
 // Fermer au clic sur l'overlay
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   const modalOv = document.getElementById('modal-ov');
   if (modalOv) {
     modalOv.addEventListener('click', function(e) {
@@ -3731,8 +3768,70 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-  loadConvocationsFromStorage();
+  await loadConvocationsFromStorage();
 });
+
+/* ═══════════════════════════════════════════════
+   AUTO-REFRESH SYSTEM (actualisation automatique)
+═══════════════════════════════════════════════ */
+let lastAttendanceData = null;
+let lastConvocationsData = null;
+
+// Écouter les changements de localStorage (synchronisation entre onglets)
+window.addEventListener('storage', async function(e) {
+  if (e.key === 'riantec_attendance_update' && appState.isLoggedIn) {
+    await refreshTrainingsTab();
+    await refreshMatchesTab();
+    await refreshDashboard();
+  }
+  if (e.key === 'riantec_convocations_update' && appState.isLoggedIn) {
+    await loadConvocationsFromStorage();
+    const matchesTab = document.getElementById('app-tab-matches');
+    if (matchesTab && matchesTab.classList.contains('active')) {
+      await renderConvocationsList('match-1');
+      await renderConvocationsList('match-2');
+    }
+  }
+});
+
+async function checkForUpdates() {
+  if (!appState.isLoggedIn) return;
+  
+  try {
+    // Vérifier les mises à jour des présences
+    const currentAttendanceData = await getAttendanceData();
+    const attendanceChanged = JSON.stringify(currentAttendanceData) !== JSON.stringify(lastAttendanceData);
+    
+    if (attendanceChanged && lastAttendanceData !== null) {
+      // Les données ont changé, rafraîchir l'interface
+      await refreshTrainingsTab();
+      await refreshMatchesTab();
+      await refreshDashboard();
+    }
+    lastAttendanceData = currentAttendanceData;
+    
+    // Vérifier les mises à jour des convocations
+    await loadConvocationsFromStorage();
+    const currentConvocationsData = JSON.stringify(convocations);
+    const convocationsChanged = currentConvocationsData !== lastConvocationsData;
+    
+    if (convocationsChanged && lastConvocationsData !== null) {
+      // Rafraîchir les listes de convocations si on est sur l'onglet matchs
+      const matchesTab = document.getElementById('app-tab-matches');
+      if (matchesTab && matchesTab.classList.contains('active')) {
+        await renderConvocationsList('match-1');
+        await renderConvocationsList('match-2');
+      }
+    }
+    lastConvocationsData = currentConvocationsData;
+    
+  } catch (error) {
+    console.error('Erreur lors de la vérification des mises à jour:', error);
+  }
+}
+
+// Vérifier les mises à jour toutes les 3 secondes
+setInterval(checkForUpdates, 3000);
 
 /* ═══════════════════════════════════════════════
    ANIMATIONS
