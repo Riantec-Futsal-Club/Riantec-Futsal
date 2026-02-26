@@ -1684,7 +1684,7 @@ nav { display: flex; gap: 2rem; }
   <!-- TRAININGS TAB -->
   <div class="app-tab-content" id="app-tab-trainings">
     <div class="training-list">
-      <div class="training-card glass">
+      <div class="training-card glass" data-event-date="2026-02-24T22:00:00" data-event-id="training-1">
         <div class="training-header">
           <div>
             <div class="training-date">Mardi 24 Février 2026</div>
@@ -1730,7 +1730,7 @@ nav { display: flex; gap: 2rem; }
         </div>
       </div>
       
-      <div class="training-card glass">
+      <div class="training-card glass" data-event-date="2026-03-03T22:00:00" data-event-id="training-2">
         <div class="training-header">
           <div>
             <div class="training-date">Mardi 03 Mars 2026</div>
@@ -1776,7 +1776,7 @@ nav { display: flex; gap: 2rem; }
         </div>
       </div>
       
-      <div class="training-card glass">
+      <div class="training-card glass" data-event-date="2026-03-10T22:00:00" data-event-id="training-3">
         <div class="training-header">
           <div>
             <div class="training-date">Mardi 10 Mars 2026</div>
@@ -1822,7 +1822,7 @@ nav { display: flex; gap: 2rem; }
         </div>
       </div>
       
-      <div class="training-card glass">
+      <div class="training-card glass" data-event-date="2026-03-17T22:00:00" data-event-id="training-4">
         <div class="training-header">
           <div>
             <div class="training-date">Mardi 17 Mars 2026</div>
@@ -1912,8 +1912,7 @@ nav { display: flex; gap: 2rem; }
           <button class="btn-view" onclick="viewAttendanceList('training-4')">Voir la liste</button>
         </div>
       </div>
-      <div class="training-card glass">
-        <div class="training-header">
+      <div class="training-card glass" data-event-date="2026-03-31T22:00:00" data-event-id="training-5"><div class="training-header">
           <div>
             <div class="training-date">Mardi 31 Mars 2026</div>
             <div class="training-time">20h15 - 22h00</div>
@@ -1957,8 +1956,7 @@ nav { display: flex; gap: 2rem; }
           <button class="btn-view" onclick="viewAttendanceList('training-4')">Voir la liste</button>
         </div>
       </div>
-      <div class="training-card glass">
-        <div class="training-header">
+      <div class="training-card glass" data-event-date="2026-04-07T22:00:00" data-event-id="training-6"><div class="training-header">
           <div>
             <div class="training-date">Mardi 07 Avril 2026</div>
             <div class="training-time">20h15 - 22h00</div>
@@ -2002,8 +2000,7 @@ nav { display: flex; gap: 2rem; }
           <button class="btn-view" onclick="viewAttendanceList('training-4')">Voir la liste</button>
         </div>
       </div>
-      <div class="training-card glass">
-        <div class="training-header">
+      <div class="training-card glass" data-event-date="2026-04-14T22:00:00" data-event-id="training-7"><div class="training-header">
           <div>
             <div class="training-date">Mardi 14 Avril 2026</div>
             <div class="training-time">20h15 - 22h00</div>
@@ -2047,8 +2044,7 @@ nav { display: flex; gap: 2rem; }
           <button class="btn-view" onclick="viewAttendanceList('training-4')">Voir la liste</button>
         </div>
       </div>
-      <div class="training-card glass">
-        <div class="training-header">
+      <div class="training-card glass" data-event-date="2026-04-21T22:00:00" data-event-id="training-8"><div class="training-header">
           <div>
             <div class="training-date">Mardi 21 Avril 2026</div>
             <div class="training-time">20h15 - 22h00</div>
@@ -2092,8 +2088,7 @@ nav { display: flex; gap: 2rem; }
           <button class="btn-view" onclick="viewAttendanceList('training-4')">Voir la liste</button>
         </div>
       </div>
-      <div class="training-card glass">
-        <div class="training-header">
+      <div class="training-card glass" data-event-date="2026-04-28T22:00:00" data-event-id="training-9"><div class="training-header">
           <div>
             <div class="training-date">Mardi 28 Avril 2026</div>
             <div class="training-time">20h15 - 22h00</div>
@@ -2368,7 +2363,7 @@ nav { display: flex; gap: 2rem; }
   <div class="app-tab-content" id="app-tab-matches">
     <div class="training-list">
       
-      <div class="training-card glass-gold">
+      <div class="training-card glass-gold" data-event-date="2026-02-26T21:00:00" data-event-id="match-1">
         <div class="training-header">
           <div>
             <div class="training-date">Jeudi 26 Février</div>
@@ -2423,7 +2418,7 @@ nav { display: flex; gap: 2rem; }
         </div>
       </div>
       
-      <div class="training-card glass-gold">
+      <div class="training-card glass-gold" data-event-date="2026-03-05T21:00:00" data-event-id="match-2">
         <div class="training-header">
           <div>
             <div class="training-date">Jeudi 5 Mars</div>
@@ -3815,7 +3810,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
   }
   await loadConvocationsFromStorage();
+  
+  // Masquer les événements passés au chargement
+  hidePastEvents();
 });
+
+/* ═══════════════════════════════════════════════
+   HIDE PAST EVENTS (masquer les événements passés)
+═══════════════════════════════════════════════ */
+function hidePastEvents() {
+  // Récupérer toutes les cartes d'événements avec une date
+  const eventCards = document.querySelectorAll('[data-event-date]');
+  const now = new Date();
+  
+  eventCards.forEach(card => {
+    const eventDateStr = card.getAttribute('data-event-date');
+    if (eventDateStr) {
+      const eventDate = new Date(eventDateStr);
+      
+      // Si l'événement est passé (plus de 2 heures après l'heure de début)
+      if (eventDate < new Date(now - 2 * 60 * 60 * 1000)) {
+        card.style.display = 'none';
+        console.log(`✅ Événement masqué: ${card.getAttribute('data-event-id')} (${eventDateStr})`);
+      } else {
+        card.style.display = 'block';
+        console.log(`👁️ Événement visible: ${card.getAttribute('data-event-id')} (${eventDateStr})`);
+      }
+    }
+  });
+}
 
 /* ═══════════════════════════════════════════════
    FIREBASE REALTIME LISTENERS (synchronisation temps réel)
